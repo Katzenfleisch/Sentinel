@@ -14,7 +14,7 @@ if Server then
         -- filler_bots are only enable on dedicated servers, force them to be there always
         -- self:SetMaxBots(Server.GetConfigSetting("filler_bots"), false)
 
-        self:SetMaxBots(10, false) -- Force the filler bot setting to be 0
+        self:SetMaxBots(0, false) -- Force the filler bot setting to be 0
         return rval
     end
 end
