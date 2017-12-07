@@ -15,3 +15,5 @@ ModLoader_SetupFileHook("lua/Egg.lua", "post")
 ModLoader_SetupFileHook("lua/Player.lua", "post")
 ModLoader_SetupFileHook("lua/bots/BotTeamController.lua", "post")
 ModLoader_SetupFileHook("lua/LOSMixin.lua", "post")
+
+ModLoader_SetupFileHook("lua/Shared.lua", "post")
