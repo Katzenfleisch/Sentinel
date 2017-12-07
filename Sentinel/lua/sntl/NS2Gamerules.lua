@@ -1,11 +1,10 @@
 if Server then
 
-    local orig_NS2Gamerules_EndGame = NS2Gamerules.EndGame
-    function NS2Gamerules:EndGame(winningTeam, autoConceded)
-        local rval = orig_NS2Gamerules_EndGame(self, winningTeam, autoConceded)
+    -- local orig_NS2Gamerules_CheckEndGame = NS2Gamerules.CheckEndGame
+    -- function NS2Gamerules:CheckEndGame(winningTeam, autoConceded)
+    --     local rval = orig_NS2Gamerules_CheckEndGame(self, winningTeam, autoConceded)
 
-        Log("We won !!!")
-        return rval
-    end
+    --     return rval
+    -- end
 
 end
