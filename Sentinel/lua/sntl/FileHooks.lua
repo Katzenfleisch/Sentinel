@@ -6,3 +6,5 @@ local function ModLoader_SetupFileHook(file, replace_type)
 end
 
 ModLoader_SetupFileHook("lua/NS2Gamerules.lua", "post")
+ModLoader_SetupFileHook("lua/AlienTeam.lua", "post")
+ModLoader_SetupFileHook("lua/Egg.lua", "post")
