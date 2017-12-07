@@ -1,8 +1,8 @@
--- ModLoader.SetupFileHook("lua/Observatory.lua",              "lua/BeaconOpti/BO_Observatory.lua", "post")
--- ModLoader.SetupFileHook("lua/BalanceMisc.lua",              "lua/BeaconOpti/BO_BalanceMisc.lua", "post")
--- ModLoader.SetupFileHook("lua/SmoothedRelevancyMixin.lua",   "lua/BeaconOpti/BO_SmoothedRelevancyMixin.lua", "post")
--- ModLoader.SetupFileHook("lua/LOSMixin.lua",                 "lua/BeaconOpti/BO_LOSMixin.lua", "post")
--- ModLoader.SetupFileHook("lua/Gamerules.lua",                "lua/BeaconOpti/BO_Gamerules.lua", "post")
--- -- Not need (does not fix the lag on game start (entity are re-created and not moved))
--- -- ModLoader.SetupFileHook("lua/NS2Gamerules.lua",          "lua/BeaconOpti/BO_NS2Gamerules.lua", "post")
--- ModLoader.SetupFileHook("lua/Weapons/Weapon.lua",           "lua/BeaconOpti/BO_Weapon.lua", "post")
+local function ModLoader_SetupFileHook(file, replace_type)
+    local sntl_file = string.gsub(file, "lua/", "lua/sntl/", 1)
+
+    Log("ModLoader.SetupFileHook(\"%s\",  \"%s\", \"%s\")", file,  sntl_file, replace_type)
+    ModLoader.SetupFileHook(file,  sntl_file, replace_type)
+end
+
+ModLoader_SetupFileHook("lua/NS2Gamerules.lua", "post")
