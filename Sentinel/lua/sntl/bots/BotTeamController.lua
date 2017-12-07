@@ -1,3 +1,7 @@
+function BotTeamController:GetMaxBots()
+    return self.MaxBots
+end
+
 --[[
 -- Adds/removes a bot if needed, calling this method will trigger a recursive loop
 -- over the PostJoinTeam method rebalancing the bots.
@@ -5,7 +9,6 @@
 function BotTeamController:UpdateBots()
     PROFILE("BotTeamController:UpdateBots")
 
-    Log("Updating filler bots (maxbots: %s)",  self.MaxBots)
     if self.MaxBots < 1 then return end --BotTeamController is disabled
 
     local team1HumanNum, _            = self:GetPlayerNumbersForTeam(kTeam1Index)

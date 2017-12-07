@@ -1,7 +1,20 @@
 
+-- local k
+
+
+-- local function FindLocation()
 
 function AlienTeam:UpdateRandomEggSpawn(timePassed)
     return
+end
+
+function AlienTeam:UpdateFillerBots()
+    local gamerules = GetGamerules()
+    local botTeamController = gamerules:GetBotTeamController()
+    local marineTeam = gamerules:GetTeam(kMarineTeamType)
+    local botCount = marineTeam:GetHumanPlayerCount() * 3
+
+    gamerules:SetMaxBots(botCount, false)
 end
 
 local old_AlienTeam_Update = AlienTeam.Update
@@ -9,6 +22,7 @@ function AlienTeam:Update(timePassed)
     local rval = old_AlienTeam_Update and old_AlienTeam_Update(self, timePassed)
 
     self:UpdateRandomEggSpawn(timePassed)
+    self:UpdateFillerBots()
     return rval
 end
 
@@ -45,3 +59,11 @@ function AlienTeam:GetHasTeamLost()
     return false
 
 end
+
+local function OnClientConnect(client)
+end
+local function OnClientDisconnected(client)
+end
+
+Event.Hook("ClientConnect", OnClientConnect)
+Event.Hook("ClientDisconnected", OnClientDisconnected)

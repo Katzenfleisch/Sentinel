@@ -7,6 +7,10 @@ if Server then
     --     return rval
     -- end
 
+    function NS2Gamerules:GetBotTeamController()
+        return self.botTeamController
+    end
+
     local old_NS2Gamerules_OnCreate = NS2Gamerules.OnCreate
     function NS2Gamerules:OnCreate()
         local rval = old_NS2Gamerules_OnCreate(self)
