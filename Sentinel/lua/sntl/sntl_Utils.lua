@@ -88,6 +88,9 @@ function SNTL_ShuffleArray(array, randomSeed)
         table.remove(array, rand_pos)
     end
 
+    if randomSeed then
+        math.randomseed(os.time()) -- Reset random()
+    end
     return new_array
 end
 
