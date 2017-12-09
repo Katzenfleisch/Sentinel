@@ -1,10 +1,10 @@
 
--- Hack to make everything visible when working on the mod
+-- Hack to make everything visible when working on the mod offline
 
 local old_LOSMixin_GetIsSighted = LOSMixin.GetIsSighted
 function LOSMixin:GetIsSighted()
-    if GetGameInfoEntity():GetIsDedicated() then
-        return false
+    if not GetGameInfoEntity():GetIsDedicated() then -- Not working somehow
+        return true
     end
     return old_LOSMixin_GetIsSighted(self)
 end
