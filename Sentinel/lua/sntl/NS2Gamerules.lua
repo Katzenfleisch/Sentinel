@@ -19,6 +19,42 @@ if Server then
         return self.botTeamController
     end
 
+    function NS2Gamerules:CheckForNoCommander(onTeam, commanderType)
+        -- Remove the "no com" message
+    end
+
+    function NS2Gamerules:CheckGameStart()
+        if self:GetGameState() <= kGameState.PreGame then
+            local team1NumPlayer = self.team1:GetNumPlayers()
+
+            if team1NumPlayer > 0 or Shared.GetCheatsEnabled() then
+                if self:GetGameState() < kGameState.PreGame then
+                    self:SetGameState(kGameState.PreGame)
+                end
+            else
+
+                if self:GetGameState() == kGameState.PreGame then
+                    self:SetGameState(kGameState.NotStarted)
+                end
+
+            end
+        end
+    end
+
+    local old_NS2Gamerules_CheckGameEnd = NS2Gamerules.CheckGameEnd
+    function NS2Gamerules:CheckGameEnd()
+        return old_NS2Gamerules_CheckGameEnd(self)
+    end
+
+    function NS2Gamerules:UpdateWarmUp()
+        -- No warmup
+    end
+
+    local old_NS2Gamerules_GetGameStarted = NS2Gamerules.GetGameStarted
+    function NS2Gamerules:GetGameStarted()
+        return old_NS2Gamerules_GetGameStarted(self)
+    end
+
     local old_NS2Gamerules_OnCreate = NS2Gamerules.OnCreate
     function NS2Gamerules:OnCreate()
         local rval = old_NS2Gamerules_OnCreate(self)
