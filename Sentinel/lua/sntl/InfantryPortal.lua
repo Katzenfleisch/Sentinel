@@ -27,16 +27,6 @@ if Server then
         self.respawnLeft = math.max(0, self.respawnLeft - 1)
     end
 
-    -- local old_InfantryPortal_OnUpdate = InfantryPortal.OnUpdate
-    -- function InfantryPortal:OnUpdate(deltatime)
-    --     if old_InfantryPortal_OnUpdate then
-    --         old_InfantryPortal_OnUpdate(self, deltatime)
-    --     end
-
-    --     if SNTL_LimitCallFrequency(InfantryPortal.OnUpdate, kWorldMessageLifeTime + 5) then return end
-
-    -- end
-
 end
 
 if Client then
