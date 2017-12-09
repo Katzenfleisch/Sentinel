@@ -13,21 +13,21 @@ function MarineTeam:SpawnInitialStructures(techPoint)
     assert(techPoint ~= nil)
 
     local origin = techPoint:GetOrigin()
+
     local ip = CreateEntity(InfantryPortal.kMapName, origin, kMarineTeamType)
-    ip:SetConstructionComplete()
+    if ip then ip:SetConstructionComplete() ; SetRandomAngle(ip) end
 
-    -- Force buildings to be on a different circle around the IP so they don't overlap
-    local pg_origin      = SNTL_SpreadedPlacementFromOrigin(GetExtents(kTechId.PhaseGate),  origin, 1, 2, 3)
-    local armslab_origin = SNTL_SpreadedPlacementFromOrigin(GetExtents(kTechId.ArmsLab),    origin, 1, 5, 6)
-    local armory_origin  = SNTL_SpreadedPlacementFromOrigin(GetExtents(kTechId.Armory),     origin, 1, 5, 6)
+    local pg_origin = SNTL_SpreadedPlacementFromOrigin(GetExtents(kTechId.PhaseGate), origin, 1, 2, 5)
+    local pg = pg_origin and CreateEntity(PhaseGate.kMapName, pg_origin[1], kMarineTeamType)
+    if pg then pg:SetConstructionComplete() ; SetRandomAngle(pg) end
 
-    local pg      = pg_origin       and CreateEntity(PhaseGate.kMapName,    pg_origin[1],       kMarineTeamType)
-    local armslab = armslab_origin  and CreateEntity(ArmsLab.kMapName,      armslab_origin[1],  kMarineTeamType)
-    local armory  = armory_origin   and CreateEntity(Armory.kMapName,       armory_origin[1],   kMarineTeamType)
+    local armslab_origin = SNTL_SpreadedPlacementFromOrigin(GetExtents(kTechId.ArmsLab), origin, 1, 2, 5)
+    local armslab = armslab_origin and CreateEntity(ArmsLab.kMapName, armslab_origin[1], kMarineTeamType)
+    if armslab then armslab:SetConstructionComplete() ; SetRandomAngle(armslab) end
 
-    if pg       then pg:SetConstructionComplete()       ; SetRandomAngle(pg)        end
-    if armslab  then armslab:SetConstructionComplete()  ; SetRandomAngle(armslab)   end
-    if armory   then armory:SetConstructionComplete()   ; SetRandomAngle(armory)    end
+    local armory_origin = SNTL_SpreadedPlacementFromOrigin(GetExtents(kTechId.Armory), origin, 1, 2, 5)
+    local armory = armory_origin and CreateEntity(Armory.kMapName, armory_origin[1], kMarineTeamType)
+    if armory then armory:SetConstructionComplete() ; SetRandomAngle(armory) end
 
     return
 
