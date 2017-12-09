@@ -59,7 +59,8 @@ function SNTL_SpreadedPlacementFromOrigin(extents, orig, maxCount, minRange, max
                 end
 
                 if (success) then
-                    table.insert(prePlaceOrig, position)
+                    -- 0.1 needed somehow to get the building really on the ground
+                    table.insert(prePlaceOrig, position - Vector(0, 0.1, 0))
                     break
                 end
             end
