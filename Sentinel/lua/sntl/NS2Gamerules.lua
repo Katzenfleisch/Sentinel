@@ -7,6 +7,14 @@ if Server then
     --     return rval
     -- end
 
+    function NS2Gamerules:GetCanJoinTeamNumber(player, teamNumber)
+        if teamNumber ~= kAlienTeamType or SNTL_IsPlayerVirtual(player) then
+            return true
+        end
+        Server.SendNetworkMessage(player, "SNTL_JoinError", SNTL_BuildJoinErrorMessage(0), true)
+        return false
+    end
+
     function NS2Gamerules:GetBotTeamController()
         return self.botTeamController
     end
