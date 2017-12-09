@@ -107,11 +107,15 @@ end
 
 function AlienTeam:UpdateRandomEggSpawn(timePassed)
 
+    if SNTL_LimitCallFrequency(AlienTeam.UpdateRandomEggSpawn, 5) then return end
+
     SpawnRandomEggs(1, 3)
     return
 end
 
 function AlienTeam:UpdateFillerBots()
+
+    if SNTL_LimitCallFrequency(AlienTeam.UpdateFillerBots, 1) then return end
 
     local gamerules = GetGamerules()
     local botTeamController = gamerules:GetBotTeamController()
