@@ -48,20 +48,22 @@ if Server then
             local IPs = Shared.GetEntitiesWithClassname("InfantryPortal")
             for _, ent in ientitylist(IPs) do
 
-                local location = GetLocationForPoint(ent:GetOrigin())
+                if ent.respawnLeft > 0 then
+                    local location = GetLocationForPoint(ent:GetOrigin())
 
-                local enemyPlayers = GetEntitiesForTeam("Player", GetEnemyTeamNumber(ent:GetTeamNumber()))
-                for e = 1, #enemyPlayers do
+                    local enemyPlayers = GetEntitiesForTeam("Player", GetEnemyTeamNumber(ent:GetTeamNumber()))
+                    for e = 1, #enemyPlayers do
 
-                    local enemy = enemyPlayers[e]
-                    local enemyLocation = GetLocationForPoint(enemy:GetOrigin())
-                    if enemyLocation and location:GetName() == enemyLocation:GetName() then
-                        local health = enemy:GetMaxHealth() * 0.10 * timePassed
-                        local armor = enemy:GetMaxArmor() * 0.10 * timePassed
-                        local damage = health + armor
-                        enemy:TakeDamage(damage, nil, nil, nil, nil, armor, health, kDamageType.Normal)
+                        local enemy = enemyPlayers[e]
+                        local enemyLocation = GetLocationForPoint(enemy:GetOrigin())
+                        if enemyLocation and location:GetName() == enemyLocation:GetName() then
+                            local health = enemy:GetMaxHealth() * 0.10 * timePassed
+                            local armor = enemy:GetMaxArmor() * 0.10 * timePassed
+                            local damage = health + armor
+                            enemy:TakeDamage(damage, nil, nil, nil, nil, armor, health, kDamageType.Normal)
+                        end
+
                     end
-
                 end
 
             end
