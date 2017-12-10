@@ -37,7 +37,7 @@ if Client then
             old_InfantryPortal_OnUpdate(self, deltatime)
         end
 
-        if GetGameInfoEntity() and GetGameInfoEntity():GetGameStarted() then
+        if GetGameInfoEntity() and GetGameInfoEntity():GetGameStarted() and GetIsUnitActive(self) then
 
             if SNTL_LimitCallFrequency(InfantryPortal.OnUpdate, kWorldMessageLifeTime + 5) then return end
 
