@@ -23,6 +23,33 @@ function SNTL_IsPlayerVirtual(ent)
    end
 end
 
+function SNTL_GetGroundAtPosition(position, filter, physicsGroupMask, extents)
+
+    local kCapsuleSize = 0.1
+
+    local topOffset = extents.y + kCapsuleSize
+    local startPosition = position + Vector(0, topOffset, 0)
+    local endPosition = position - Vector(0, 1000, 0)
+
+    local trace
+
+    physicsGroupMask = physicsGroupMask or PhysicsMask.Movement
+    if filter == nil then
+        trace = Shared.TraceCapsule(startPosition, endPosition, kCapsuleSize, 0, CollisionRep.Move, physicsGroupMask)
+    else
+        trace = Shared.TraceCapsule(startPosition, endPosition, kCapsuleSize, 0, CollisionRep.Move, physicsGroupMask, filter)
+    end
+
+    -- If we didn't hit anything, then use our existing position. This
+    -- prevents objects from constantly moving downward if they get outside
+    -- of the bounds of the map.
+    if trace.fraction ~= 1 then
+        return trace.endPoint - Vector(0, 2 * kCapsuleSize, 0)
+    else
+        return position
+    end
+end
+
 -- @return a list of at most @number Vector(x,y,z) spreading around a given @orig point
 -- If it can't find any placement, the list still contains at least the original given point
 function SNTL_SpreadedPlacementFromOrigin(extents, orig, maxCount, minRange, maxRange)
@@ -42,7 +69,7 @@ function SNTL_SpreadedPlacementFromOrigin(extents, orig, maxCount, minRange, max
             -- Place the point a bit above ground, easier to find other points
             usedOrig = (#prePlaceOrig > 0 and prePlaceOrig[math.random(1, #prePlaceOrig)] or orig) + Vector(0, 1, 0)
             position = GetRandomSpawnForCapsule(capsuleHeight, capsuleRadius, usedOrig, minRange, maxRange, EntityFilterAll())
-            position = position and GetGroundAtPosition(position, nil, PhysicsMask.AllButPCs, extents)
+            position = position and SNTL_GetGroundAtPosition(position, nil, PhysicsMask.AllButPCs, extents)
 
             if position then
                 success = true
@@ -60,7 +87,7 @@ function SNTL_SpreadedPlacementFromOrigin(extents, orig, maxCount, minRange, max
 
                 if (success) then
                     -- 0.1 needed somehow to get the building really on the ground
-                    table.insert(prePlaceOrig, position - Vector(0, 0.1, 0))
+                    table.insert(prePlaceOrig, position)
                     break
                 end
             end
