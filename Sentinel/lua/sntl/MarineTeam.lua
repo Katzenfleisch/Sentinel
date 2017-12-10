@@ -43,6 +43,11 @@ function MarineTeam:SpawnInitialStructures(techPoint)
 
     for i, orig in ipairs(weapons_origins) do
         local weapon = CreateEntity(weapons[i], orig, kMarineTeamType)
+
+        if weapon and weapon.GetVariantModel and weapon.SetModel then
+            weapon:SetModel( weapon:GetVariantModel() )
+        end
+
     end
 
     return
