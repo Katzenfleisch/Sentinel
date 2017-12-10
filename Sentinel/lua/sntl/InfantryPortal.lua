@@ -10,7 +10,7 @@ if Server then
     function InfantryPortal:OnInitialized()
         old_InfantryPortal_OnInitialized(self)
 
-        self.respawnLeft = 1
+        self.respawnLeft = 3 + self:GetTeam():GetNumPlayers()
     end
 
     local old_InfantryPortal_GetIsPowered = InfantryPortal.GetIsPowered or PowerConsumerMixin.GetIsPowered
