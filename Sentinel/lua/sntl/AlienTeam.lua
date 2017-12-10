@@ -146,6 +146,7 @@ end
 local old_AlienTeam_SpawnInitialStructures = AlienTeam.SpawnInitialStructures
 function AlienTeam:SpawnInitialStructures(techPoint)
     SpawnRandomEggs(3, 5)
+    GetGameInfoEntity():SetNumMaxEggs(3 * 5)
     return -- Disable, do not spawn any alien base
 end
 

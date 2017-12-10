@@ -12,6 +12,7 @@ if Server then
 
         self.respawnLeft = 3 + self:GetTeam():GetNumPlayers()
         GetGameInfoEntity():SetNumMarineRespawnLeft(self.respawnLeft)
+        GetGameInfoEntity():SetNumMarineRespawnMax(self.respawnLeft)
     end
 
     local old_InfantryPortal_GetIsPowered = InfantryPortal.GetIsPowered or PowerConsumerMixin.GetIsPowered
