@@ -135,8 +135,10 @@ function AlienTeam:Update(timePassed)
 
     if GetGamerules():GetGameStarted() then
         self:UpdateNoMoreEggs()
+        self:UpdateFillerBots()
+    else
+        self:SetMaxBots(0, false)
     end
-    self:UpdateFillerBots()
     return rval
 end
 
