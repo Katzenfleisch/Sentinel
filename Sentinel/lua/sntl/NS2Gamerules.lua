@@ -41,6 +41,11 @@ if Server then
         end
     end
 
+    function NS2Gamerules:GetFriendlyFire()
+        return true
+    end
+
+
     function NS2Gamerules:KillEnemiesNearBase(timePassed)
 
         if self:GetGameStarted() then
