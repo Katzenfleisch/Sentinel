@@ -74,9 +74,11 @@ local function SpawnRandomEggs(numGroup, numEggPerGroup)
     return true
 end
 
-local old_AlienTeam_Initialize = AlienTeam.Initialize
-function AlienTeam:Initialize(teamName, teamNumber)
-    old_AlienTeam_Initialize(self, teamName, teamNumber)
+local old_AlienTeam_OnResetComplete = AlienTeam.OnResetComplete
+function AlienTeam:OnResetComplete(teamName, teamNumber)
+    if old_AlienTeam_OnResetComplete then
+        old_AlienTeam_OnResetComplete(self, teamName, teamNumber)
+    end
 
     self.sntl_numEggs = 0
     self.sntl_noMoreEggs = false
