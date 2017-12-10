@@ -95,9 +95,9 @@ local old_AlienTeam_Update = AlienTeam.Update
 function AlienTeam:Update(timePassed)
     local rval = old_AlienTeam_Update and old_AlienTeam_Update(self, timePassed)
 
-    if GetGamerules():GetGameStarted() then
-        self:UpdateRandomEggSpawn(timePassed)
-    end
+    -- if GetGamerules():GetGameStarted() then
+    --     self:UpdateRandomEggSpawn(timePassed)
+    -- end
     self:UpdateFillerBots()
     return rval
 end
