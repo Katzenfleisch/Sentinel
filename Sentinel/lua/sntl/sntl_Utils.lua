@@ -121,20 +121,6 @@ function SNTL_ShuffleArray(array, randomSeed)
     return new_array
 end
 
-if (Client) then
-    local sntl_strings = {
-        ["SNTL_JOIN_ERROR_ALIEN"] = "You can only join the marine team",
-        -- --
-        ["MARINE_TEAM_GAME_STARTED"] = "Objective: Kill all the eggs",
-        ["RETURN_TO_BASE"] = "Objective: Return to base"
-    }
-
-    local old_Locale_ResolveString = Locale.ResolveString
-    function Locale.ResolveString(text)
-        return sntl_strings[text] or old_Locale_ResolveString(text)
-    end
-end
-
 -- Needed for bots to have a uniq ID, otherwise they would cound as '1' player.
 -- This will, for example, make all bot gorges shared the same tunnel/hydras/clogs pool.
 if Server then

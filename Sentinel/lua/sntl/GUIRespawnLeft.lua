@@ -137,7 +137,13 @@ function GUIRespawnLeft:Update(deltaTime)
 
     local player = Client.GetLocalPlayer()
 
-    --1--(player and player.GetFuel) and player:GetFuel() or 0
+
+    if not player or not player:GetIsAlive() or
+        (player:GetTeamNumber() ~= kMarineTeamType and not player:isa("Spectator"))
+    then
+        self:SetIsVisible(false)
+        return
+    end
 
     local respawnLeft = GetGameInfoEntity():GetNumMarineRespawnLeft()
     local respawnMax = GetGameInfoEntity():GetNumMarineRespawnMax()
@@ -152,7 +158,7 @@ function GUIRespawnLeft:Update(deltaTime)
 
     end
 
-    if GetGameInfoEntity():GetGameStarted() and player:GetIsAlive() then
+    if GetGameInfoEntity():GetGameStarted() then
         self:SetIsVisible(true)
     else
         self:SetIsVisible(false)

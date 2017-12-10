@@ -132,6 +132,13 @@ function GUIEggLeft:Update(deltaTime)
     local player = Client.GetLocalPlayer()
     local desiredEggFraction = GetGameInfoEntity():GetNumEggs() / GetGameInfoEntity():GetNumMaxEggs()
 
+    if not player or not player:GetIsAlive() or
+        (player:GetTeamNumber() ~= kMarineTeamType and not player:isa("Spectator"))
+    then
+        self:SetIsVisible(false)
+        return
+    end
+
     --1--(player and player.GetFuel) and player:GetFuel() or 0
 
     self.eggFraction = Slerp(self.eggFraction, desiredEggFraction, deltaTime)
@@ -143,7 +150,7 @@ function GUIEggLeft:Update(deltaTime)
 
     end
 
-    if GetGameInfoEntity():GetGameStarted() and player:GetIsAlive() then
+    if GetGameInfoEntity():GetGameStarted() then
         self:SetIsVisible(true)
     else
         self:SetIsVisible(false)
