@@ -24,6 +24,8 @@ ModLoader_SetupFileHook("lua/InfantryPortal.lua", "post")
 ModLoader_SetupFileHook("lua/Balance.lua", "post")
 ModLoader_SetupFileHook("lua/BalanceHealth.lua", "post")
 
+ModLoader_SetupFileHook("lua/GameInfo.lua", "post")
+
 ModLoader_SetupFileHook("lua/Egg.lua", "post")
 ModLoader_SetupFileHook("lua/Player.lua", "post")
 ModLoader_SetupFileHook("lua/bots/BotTeamController.lua", "post")

@@ -112,6 +112,7 @@ function AlienTeam:UpdateNoMoreEggs()
     if SNTL_LimitCallFrequency(AlienTeam.UpdateNoMoreEggs, 1) then return end
 
     self.sntl_numEggs = #GetEntitiesForTeam("Egg", kAlienTeamType)
+    GetGameInfoEntity():SetNumEggs(self.sntl_numEggs)
     if not self.sntl_noMoreEggs and self:GetNumEggs() == 0 then
         local pgs = GetEntitiesForTeam("PhaseGate", kMarineTeamType)
         local marineTeam = GetGamerules():GetTeam(kMarineTeamType)
@@ -137,7 +138,7 @@ function AlienTeam:Update(timePassed)
         self:UpdateNoMoreEggs()
         self:UpdateFillerBots()
     else
-        self:SetMaxBots(0, false)
+        GetGamerules():SetMaxBots(0, false)
     end
     return rval
 end

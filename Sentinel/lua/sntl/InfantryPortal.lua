@@ -1,8 +1,8 @@
 
-local networkVars =
-    {
-        respawnLeft = "integer"
-    }
+-- local networkVars =
+--     {
+--         respawnLeft = "integer"
+--     }
 
 if Server then
 
@@ -11,6 +11,7 @@ if Server then
         old_InfantryPortal_OnInitialized(self)
 
         self.respawnLeft = 3 + self:GetTeam():GetNumPlayers()
+        GetGameInfoEntity():SetNumMarineRespawnLeft(self.respawnLeft)
     end
 
     local old_InfantryPortal_GetIsPowered = InfantryPortal.GetIsPowered or PowerConsumerMixin.GetIsPowered
@@ -25,6 +26,7 @@ if Server then
     function InfantryPortal:FinishSpawn()
         InfantryPortal_FinishSpawn(self)
         self.respawnLeft = math.max(0, self.respawnLeft - 1)
+        GetGameInfoEntity():SetNumMarineRespawnLeft(self.respawnLeft)
     end
 
 end
@@ -40,9 +42,9 @@ if Client then
         if GetGameInfoEntity() and GetGameInfoEntity():GetGameStarted() and GetIsUnitActive(self) then
 
             if SNTL_LimitCallFrequency(InfantryPortal.OnUpdate, kWorldMessageLifeTime + 5) then return end
-
-            local msg = self.respawnLeft > 0
-                and string.format("+%d respawn left", self.respawnLeft)
+            local respawnLeft = GetGameInfoEntity():GetNumMarineRespawnLeft()
+            local msg = respawnLeft > 0
+                and string.format("+%d respawn left", respawnLeft)
                 or  string.format("No more respawn *;..;*")
 
             Client.AddWorldMessage(kWorldTextMessageType.Resources,
@@ -53,4 +55,4 @@ if Client then
     end
 end
 
-Shared.LinkClassToMap("InfantryPortal", nil, networkVars)
+-- Shared.LinkClassToMap("InfantryPortal", nil, networkVars)
