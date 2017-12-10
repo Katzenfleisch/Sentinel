@@ -49,7 +49,6 @@ local function GetSpawnLocationCandidates(maxCount)
     return candidates
 end
 
-
 local function SpawnRandomEggs(numGroup, numEggPerGroup)
     local randSeed = 1
     local candidatePos = 1
@@ -73,24 +72,20 @@ local function SpawnRandomEggs(numGroup, numEggPerGroup)
         -- Loop over each spreaded location found, otherwise just ignore if it fails to find a spot
         for j = 1, #origins do
             local position = origins[j]
-            local validForEgg = true --position and GetCanEggFit(position)
-            local egg = validForEgg and CreateEntity(Egg.kMapName, position, kAlienTeamType)
+            local egg = CreateEntity(Egg.kMapName, position, kAlienTeamType)
 
             if not egg then
                 Log("[sntl] Unable to create entity (valid pos : %s, egg : %s)", validForEgg, egg)
             else
 
-                if validForEgg then
+                -- Randomize starting angles
+                local angles = egg:GetAngles()
+                angles.yaw = math.random() * math.pi * 2
+                egg:SetAngles(angles)
 
-                    -- Randomize starting angles
-                    local angles = egg:GetAngles()
-                    angles.yaw = math.random() * math.pi * 2
-                    egg:SetAngles(angles)
-
-                    -- To make sure physics model is updated without waiting a tick
-                    egg:UpdatePhysicsModel()
-                    spawnedEggs = spawnedEggs + 1
-                end
+                -- To make sure physics model is updated without waiting a tick
+                egg:UpdatePhysicsModel()
+                spawnedEggs = spawnedEggs + 1
 
             end
         end
