@@ -41,6 +41,42 @@ if Server then
         end
     end
 
+    function NS2Gamerules:KillEnemiesNearBase(timePassed)
+
+        if self:GetGameStarted() then
+
+            local IPs = Shared.GetEntitiesWithClassname("InfantryPortal")
+            for _, ent in ientitylist(IPs) do
+
+                local location = GetLocationForPoint(ent:GetOrigin())
+
+                local enemyPlayers = GetEntitiesForTeam("Player", GetEnemyTeamNumber(ent:GetTeamNumber()))
+                for e = 1, #enemyPlayers do
+
+                    local enemy = enemyPlayers[e]
+                    local enemyLocation = GetLocationForPoint(enemy:GetOrigin())
+                    if enemyLocation and location:GetName() == enemyLocation:GetName() then
+                        local health = enemy:GetMaxHealth() * 0.10 * timePassed
+                        local armor = enemy:GetMaxArmor() * 0.10 * timePassed
+                        local damage = health + armor
+                        enemy:TakeDamage(damage, nil, nil, nil, nil, armor, health, kDamageType.Normal)
+                    end
+
+                end
+
+            end
+
+        end
+
+    end
+
+    local old_NS2Gamerules_OnUpdate = NS2Gamerules.OnUpdate
+    function NS2Gamerules:OnUpdate(timePassed)
+        old_NS2Gamerules_OnUpdate(self, timePassed)
+        self:KillEnemiesNearBase(timePassed)
+    end
+
+
     local old_NS2Gamerules_CheckGameEnd = NS2Gamerules.CheckGameEnd
     function NS2Gamerules:CheckGameEnd()
         return old_NS2Gamerules_CheckGameEnd(self)
