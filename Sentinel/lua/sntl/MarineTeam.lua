@@ -1,3 +1,6 @@
+Script.Load("lua/sntl/Elixer_Utility.lua")
+Elixer.UseVersion(1.8)
+
 local function SetRandomAngle(ent)
     -- Randomize starting angles
     local angles = ent:GetAngles()
@@ -56,3 +59,8 @@ function MarineTeam:GetHasTeamLost()
     return false
 
 end
+
+-- Disable the "We need an Infantry portal" voice warning
+ReplaceUpValue(MarineTeam.Update, "CheckForNoIPs",
+               function (self) return end,
+               { LocateRecurse = true; CopyUpValues = true; } )
