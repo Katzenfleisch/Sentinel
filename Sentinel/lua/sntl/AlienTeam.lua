@@ -9,7 +9,7 @@ local networkVars =
 local function GetSpawnLocationCandidates(maxCount)
     local count = 0
     local candidates = {}
-    local spawnNearEntities = {"TechPoint", "ResourcePoint", "PowerPoint"}
+    local spawnNearEntities = {"ResourcePoint"}
 
     -- Use direct distance (faster)
     maxCount = maxCount or math.huge
@@ -54,11 +54,10 @@ local function GetSpawnLocationCandidates(maxCount)
 end
 
 local function SpawnRandomEggs(numGroup, numEggPerGroup)
-    local randSeed = 1
     local candidatePos = 1
     local spawnCandidates = GetSpawnLocationCandidates()
 
-    spawnCandidates = SNTL_ShuffleArray(spawnCandidates, randSeed)
+    spawnCandidates = SNTL_ShuffleArray(spawnCandidates)
     if #spawnCandidates == 0 then
         Log("[sntl] Unable to find an egg spawn location (marines nearby)")
         return false
