@@ -70,6 +70,7 @@ end
 local old_Egg_SpawnPlayer = Egg.SpawnPlayer
 function Egg:SpawnPlayer(player)
 
+    local kStartHealthScalar = 0.25
     local eggOrigin = self:GetOrigin()
     local rval, new_player = old_Egg_SpawnPlayer(self, player)
 
@@ -85,6 +86,8 @@ function Egg:SpawnPlayer(player)
 
         -- Each hatched egg leads to a new egg being created
         SNTL_SpawnEggsAroundPos(position, 1)
+
+        new_player:SetHealth(new_player:GetMaxHealth() * kStartHealthScalar)
 
     end
 
