@@ -13,6 +13,11 @@ end
 
 function MarineTeam:SpawnInitialStructures(techPoint)
 
+    local weapons = {Shotgun.kMapName, Shotgun.kMapName, Shotgun.kMapName,
+                     GrenadeLauncher.kMapName,
+                     LayMines.kMapName, LayMines.kMapName, LayMines.kMapName
+    }
+
     assert(techPoint ~= nil)
 
     local origin = techPoint:GetOrigin()
@@ -31,6 +36,14 @@ function MarineTeam:SpawnInitialStructures(techPoint)
     local armory_origin = SNTL_SpreadedPlacementFromOrigin(GetExtents(kTechId.Armory), origin, 1, 2, 5)
     local armory = armory_origin and CreateEntity(Armory.kMapName, armory_origin[1], kMarineTeamType)
     if armory then armory:SetConstructionComplete() ; SetRandomAngle(armory) end
+
+    -- Spawn a few weapons as well
+    local weapons_origins = SNTL_SpreadedPlacementFromOrigin(GetExtents(kTechId.Shotgun), origin, 1, 2, 5)
+    local weapons_origins = SNTL_SpreadedPlacementFromOrigin(GetExtents(kTechId.Shotgun), weapons_origins[1], #weapons, 0, 2)
+
+    for i, orig in ipairs(weapons_origins) do
+        local weapon = CreateEntity(weapons[i], orig, kMarineTeamType)
+    end
 
     return
 
