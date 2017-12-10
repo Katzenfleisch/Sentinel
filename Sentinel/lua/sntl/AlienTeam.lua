@@ -53,7 +53,6 @@ local function SpawnRandomEggs(numGroup, numEggPerGroup)
     local randSeed = 1
     local candidatePos = 1
     local spawnCandidates = GetSpawnLocationCandidates()
-    local eggExtents = GetExtents(kTechId.Egg)
 
     spawnCandidates = SNTL_ShuffleArray(spawnCandidates, randSeed)
     if #spawnCandidates == 0 then
@@ -63,36 +62,8 @@ local function SpawnRandomEggs(numGroup, numEggPerGroup)
 
     for i = 1, numGroup do
         local pos = spawnCandidates[candidatePos]:GetOrigin()
-        local spawnedEggs = 0
-        local origins = SNTL_SpreadedPlacementFromOrigin(eggExtents, pos, numEggPerGroup, 1, 6)
 
-        local location = GetLocationForPoint(pos)
-        local locationName = location and location:GetName() or "(unknown pos)"
-
-        -- Loop over each spreaded location found, otherwise just ignore if it fails to find a spot
-        for j = 1, #origins do
-            local position = origins[j]
-            local egg = CreateEntity(Egg.kMapName, position, kAlienTeamType)
-
-            if not egg then
-                Log("[sntl] Unable to create entity (valid pos : %s, egg : %s)", validForEgg, egg)
-            else
-
-                -- Randomize starting angles
-                local angles = egg:GetAngles()
-                angles.yaw = math.random() * math.pi * 2
-                egg:SetAngles(angles)
-
-                -- To make sure physics model is updated without waiting a tick
-                egg:UpdatePhysicsModel()
-                spawnedEggs = spawnedEggs + 1
-
-            end
-        end
-
-        if spawnedEggs then
-            Log("[sntl] * (%s/%s) A group of %s egg(s) were spawned in %s", i, numGroup, spawnedEggs, locationName)
-        end
+        SNTL_SpawnEggsAroundPos(pos, numEggPerGroup)
         candidatePos = 1 + ((candidatePos + 1) % #spawnCandidates)
     end
 
