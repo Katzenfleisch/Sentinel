@@ -50,10 +50,12 @@ if Server then
 
         if self:GetGameStarted() then
 
+            local alienTeam = self:GetTeam(kAlienTeamType)
             local IPs = Shared.GetEntitiesWithClassname("InfantryPortal")
             for _, ent in ientitylist(IPs) do
 
-                if ent.respawnLeft > 0 then
+                -- Only kill aliens if marines can actually spawn, and if they have eggs
+                if ent.respawnLeft > 0 and alienTeam:GetNumEggs() > 0 then
                     local location = GetLocationForPoint(ent:GetOrigin())
 
                     local enemyPlayers = GetEntitiesForTeam("Player", GetEnemyTeamNumber(ent:GetTeamNumber()))
