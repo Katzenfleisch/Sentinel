@@ -1,3 +1,6 @@
+local kTimeToReadyRoom = 8
+local kPregameLength = 15
+
 if Server then
 
     -- local orig_NS2Gamerules_CheckEndGame = NS2Gamerules.CheckEndGame
@@ -41,8 +44,34 @@ if Server then
         end
     end
 
+    function NS2Gamerules:GetPregameLength()
+
+        local preGameTime = kPregameLength
+        if Shared.GetCheatsEnabled() then
+            preGameTime = 0
+        end
+
+        return preGameTime
+
+    end
+
+
     function NS2Gamerules:GetFriendlyFire()
         return true
+    end
+
+    -- sntl: Don't move pp to the ready rooms, keep them on the team
+    function NS2Gamerules:UpdateToReadyRoom()
+
+        local state = self:GetGameState()
+        if(state == kGameState.Team1Won or state == kGameState.Team2Won or state == kGameState.Draw) and (not self.concedeStartTime) then
+            if self.timeSinceGameStateChanged >= kTimeToReadyRoom then
+                -- Spawn them there and reset teams
+                self:ResetGame()
+            end
+
+        end
+
     end
 
 
