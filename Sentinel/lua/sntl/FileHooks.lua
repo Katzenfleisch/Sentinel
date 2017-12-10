@@ -8,6 +8,8 @@ end
 ModLoader_SetupFileHook("lua/NS2Gamerules.lua", "post")
 
 ModLoader_SetupFileHook("lua/Team.lua", "post")
+
+ModLoader_SetupFileHook("lua/Alien.lua", "post")
 ModLoader_SetupFileHook("lua/AlienTeam.lua", "post")
 ModLoader_SetupFileHook("lua/MarineTeam.lua", "post")
 ModLoader_SetupFileHook("lua/PlayingTeam.lua", "post")
