@@ -45,10 +45,10 @@ function MarineTeam:GetHasTeamLost()
         -- Team can't respawn if they don't have any more ips, and lose if they are all dead
         local activePlayers = self:GetHasActivePlayers()
         local abilityToRespawn = self:GetHasAbilityToRespawn()
+        local numGates = #GetEntitiesForTeam("PhaseGate", kMarineTeamType)
 
         if  (not activePlayers and not abilityToRespawn) or
-            (self:GetNumPlayers() == 0) or
-            self:GetHasConceded() then
+            (self:GetNumPlayers() == 0) or (numGates == 0) or self:GetHasConceded() then
 
             return true
 

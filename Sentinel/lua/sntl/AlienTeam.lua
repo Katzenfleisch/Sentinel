@@ -1,6 +1,10 @@
 
-
 local kMinDistToSpawnEgg = 30
+local networkVars =
+{
+        sntl_numEggs = "integer",
+        sntl_noMoreEggs = "boolean"
+}
 
 local function GetSpawnLocationCandidates(maxCount)
     local count = 0
@@ -70,6 +74,13 @@ local function SpawnRandomEggs(numGroup, numEggPerGroup)
     return true
 end
 
+local old_AlienTeam_Initialize = AlienTeam.Initialize
+function AlienTeam:Initialize(teamName, teamNumber)
+    old_AlienTeam_Initialize(self, teamName, teamNumber)
+
+    self.sntl_numEggs = 0
+    self.sntl_noMoreEggs = false
+end
 
 function AlienTeam:UpdateRandomEggSpawn(timePassed)
 
@@ -91,13 +102,39 @@ function AlienTeam:UpdateFillerBots()
     gamerules:SetMaxBots(botCount, false)
 end
 
+function AlienTeam:GetNumEggs()
+    return self.sntl_numEggs
+end
+
+function AlienTeam:UpdateNoMoreEggs()
+
+    if SNTL_LimitCallFrequency(AlienTeam.UpdateNoMoreEggs, 1) then return end
+
+    self.sntl_numEggs = #GetEntitiesForTeam("Egg", kAlienTeamType)
+    if not self.sntl_noMoreEggs and self:GetNumEggs() == 0 then
+        local pgs = GetEntitiesForTeam("PhaseGate", kMarineTeamType)
+        local marineTeam = GetGamerules():GetTeam(kMarineTeamType)
+
+        self.sntl_noMoreEggs = true
+        local function giveOrderBackToBase(p)
+            if p and #pgs > 0 and HasMixin(p, "Live") and HasMixin(p, "Orders") and p:GetIsAlive()
+            then
+                p:GiveOrder(kTechId.Move, pgs[1]:GetId(), pgs[1]:GetOrigin(), nil, true, true)
+            end
+        end
+
+        marineTeam:ForEachPlayer(giveOrderBackToBase)
+        SendTeamMessage(marineTeam, kTeamMessageTypes.ReturnToBase)
+    end
+end
+
 local old_AlienTeam_Update = AlienTeam.Update
 function AlienTeam:Update(timePassed)
     local rval = old_AlienTeam_Update and old_AlienTeam_Update(self, timePassed)
 
-    -- if GetGamerules():GetGameStarted() then
-    --     self:UpdateRandomEggSpawn(timePassed)
-    -- end
+    if GetGamerules():GetGameStarted() then
+        self:UpdateNoMoreEggs()
+    end
     self:UpdateFillerBots()
     return rval
 end
@@ -108,39 +145,32 @@ function AlienTeam:SpawnInitialStructures(techPoint)
     return -- Disable, do not spawn any alien base
 end
 
-local old_AlienTeam_GetHasTeamLost = AlienTeam.GetHasTeamLost
+-- local old_AlienTeam_GetHasTeamLost = AlienTeam.GetHasTeamLost
 function AlienTeam:GetHasTeamLost()
 
     PROFILE("AlienTeam:GetHasTeamLost")
 
-    -- Aliens just don't lose
+    if GetGamerules():GetGameStarted() and not Shared.GetCheatsEnabled() then
+        local marineTeam = GetGamerules():GetTeam(kMarineTeamType)
+        local marineHaveActivePlayers = marineTeam:GetHasActivePlayers()
+        local aliensHaveActivePlayers = self:GetHasActivePlayers()
+        local numEggs = self:GetNumEggs()
+        local marinesEndGates = GetEntitiesForTeam("PhaseGate", kMarineTeamType)
+        local totalPhasedMarines = 0
 
-    -- if GetGamerules():GetGameStarted() and not Shared.GetCheatsEnabled() then
+        for _, pg in ipairs(marinesEndGates) do
+            totalPhasedMarines = totalPhasedMarines + pg:GetPhasedMarinesCount()
+        end
 
-        -- -- Team can't respawn or last Command Station or Hive destroyed
-        -- local activePlayers = self:GetHasActivePlayers()
-        -- local abilityToRespawn = self:GetHasAbilityToRespawn()
-        -- local numAliveCommandStructures = self:GetNumAliveCommandStructures()
-
-        -- if  (not activePlayers and not abilityToRespawn) or
-        --     (numAliveCommandStructures == 0) or
-        --     (self:GetNumPlayers() == 0) or
-        --     self:GetHasConceded() then
-
-        --     return true
-
-        -- end
-
-    -- end
+        if (not aliensHaveActivePlayers and numEggs == 0) or self:GetHasConceded() or
+            (not marineHaveActivePlayers and totalPhasedMarines > 0)
+        then
+            return true
+        end
+    end
 
     return false
 
 end
 
-local function OnClientConnect(client)
-end
-local function OnClientDisconnected(client)
-end
-
-Event.Hook("ClientConnect", OnClientConnect)
-Event.Hook("ClientDisconnected", OnClientDisconnected)
+Shared.LinkClassToMap("AlienTeam", nil, networkVars)
