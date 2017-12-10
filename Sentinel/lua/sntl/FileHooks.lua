@@ -18,6 +18,7 @@ ModLoader_SetupFileHook("lua/AlienTeam.lua", "post")
 ModLoader_SetupFileHook("lua/MarineTeam.lua", "post")
 ModLoader_SetupFileHook("lua/PlayingTeam.lua", "post")
 
+ModLoader_SetupFileHook("lua/PhaseGate.lua", "post")
 ModLoader_SetupFileHook("lua/InfantryPortal.lua", "post")
 
 ModLoader_SetupFileHook("lua/BalanceHealth.lua", "post")
