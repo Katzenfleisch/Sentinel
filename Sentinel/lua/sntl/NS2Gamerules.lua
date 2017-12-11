@@ -158,10 +158,9 @@ if Server then
     function NS2Gamerules:OnCreate()
         local rval = old_NS2Gamerules_OnCreate(self)
 
-        -- filler_bots are only enable on dedicated servers, force them to be there always
-        -- self:SetMaxBots(Server.GetConfigSetting("filler_bots"), false)
-
-        self:SetMaxBots(0, false) -- Force the filler bot setting to be 0
+        Server.SetConfigSetting("filler_bots", 0) -- Set a default value for the filler bots
+        Server.SetConfigSetting("end_round_on_team_unbalance", 0) -- Disable team unbalance autoconcede
+        self:SetMaxBots(Server.GetConfigSetting("filler_bots"), false)
         return rval
     end
 end
