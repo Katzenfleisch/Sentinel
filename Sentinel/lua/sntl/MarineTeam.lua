@@ -56,15 +56,10 @@ function MarineTeam:SpawnInitialStructures(techPoint)
 
     -- -------------------
 
-    -- local unlockedResearches = {
-    --     kTechId.Weapons1,
-    --     kTechId.Weapons2,
-    --     kTechId.Armor1
-    -- }
-
-    local unlockedWeapons = {
-        kTechId.GrenadeTech,
-        kTechId.HeavyRifleTech
+    local unlockedResearches = {
+        kTechId.Weapons1,
+        kTechId.Weapons2,
+        kTechId.Armor1
     }
 
     local marinetechtree = GetTechTree(kTeam1Index)
@@ -80,17 +75,20 @@ function MarineTeam:SpawnInitialStructures(techPoint)
     end
 
 
-    -- -- This code os not working so far
-    -- for _, up in ipairs(unlockedWeapons) do
-    --     if (up and marinetechtree:GetTechNode(up) and not marinetechtree:GetTechNode(up):GetResearched())
-    --     then -- Unlock if not already on
-    --         local AA = GetEntitiesForTeam("AdvancedArmory", kMarineTeamType)
-    --         if (#AA > 0) then
-    --             marinetechtree:GetTechNode(up):SetResearched(true)
-    --             marinetechtree:QueueOnResearchComplete(up, AA[1])
-    --         end
-    --     end
-    -- end
+    local unlockedWeapons = {
+        kTechId.GrenadeTech
+    }
+
+    for _, up in ipairs(unlockedWeapons) do
+        if (up and marinetechtree:GetTechNode(up) and not marinetechtree:GetTechNode(up):GetResearched())
+        then -- Unlock if not already on
+            local AA = GetEntitiesForTeam("AdvancedArmory", kMarineTeamType)
+            if (#AA > 0) then
+                marinetechtree:GetTechNode(up):SetResearched(true)
+                marinetechtree:QueueOnResearchComplete(up, AA[1])
+            end
+        end
+    end
 
     return
 
