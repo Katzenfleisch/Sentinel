@@ -26,6 +26,7 @@ ModLoader_SetupFileHook("lua/BalanceMisc.lua", "post")
 ModLoader_SetupFileHook("lua/BalanceHealth.lua", "post")
 
 ModLoader_SetupFileHook("lua/GameInfo.lua", "post")
+ModLoader_SetupFileHook("lua/NS2Utility.lua", "post")
 
 ModLoader_SetupFileHook("lua/Egg.lua", "post")
 ModLoader_SetupFileHook("lua/Player.lua", "post")
