@@ -53,11 +53,23 @@ local function GetSpawnLocationCandidates(maxCount)
     return candidates
 end
 
-local function SpawnRandomEggs(numGroup, numEggPerGroup)
+local function SpawnRandomEggs(numGroup, numEggPerGroup, nearOrigin)
     local candidatePos = 1
     local spawnCandidates = GetSpawnLocationCandidates()
 
-    spawnCandidates = SNTL_ShuffleArray(spawnCandidates)
+    if nearOrigin then
+        local newSpawnCandidates = {}
+
+        Shared.SortEntitiesByDistance(nearOrigin, spawnCandidates)
+        for i = 1, math.min(#spawnCandidates, numGroup + 2) do
+            table.insert(newSpawnCandidates, spawnCandidates[i])
+        end
+
+        -- Shuffle only the spawn location far from marines to get some variety
+        spawnCandidates = SNTL_ShuffleArray(newSpawnCandidates)
+    else
+        spawnCandidates = SNTL_ShuffleArray(spawnCandidates)
+    end
     if #spawnCandidates == 0 then
         Log("[sntl] Unable to find an egg spawn location (marines nearby)")
         return false
@@ -67,7 +79,7 @@ local function SpawnRandomEggs(numGroup, numEggPerGroup)
         local pos = spawnCandidates[candidatePos]:GetOrigin()
 
         SNTL_SpawnEggsAroundPos(pos, numEggPerGroup)
-        candidatePos = 1 + ((candidatePos + 1) % #spawnCandidates)
+        candidatePos = 1 + (candidatePos % #spawnCandidates)
     end
 
     return true
@@ -149,8 +161,10 @@ end
 
 local old_AlienTeam_SpawnInitialStructures = AlienTeam.SpawnInitialStructures
 function AlienTeam:SpawnInitialStructures(techPoint)
-    SpawnRandomEggs(3, 5)
-    GetGameInfoEntity():SetNumMaxEggs(3 * 5)
+    local kNumEggGroup = 4
+    local kNumEggPerGroup = 6
+    SpawnRandomEggs(kNumEggGroup, kNumEggPerGroup, techPoint:GetOrigin())
+    GetGameInfoEntity():SetNumMaxEggs(kNumEggGroup * kNumEggPerGroup)
     return -- Disable, do not spawn any alien base
 end
 
