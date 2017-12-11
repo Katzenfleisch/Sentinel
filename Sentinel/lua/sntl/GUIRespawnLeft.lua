@@ -83,7 +83,7 @@ function GUIRespawnLeft:Initialize()
 
     end
 
-    self.visible = true
+    self.visible = false
 
    self.spawnFractionTitle = GetGUIManager():CreateTextItem()
    self.spawnFractionTitle:SetFontName("fonts/AgencyFB_small.fnt")

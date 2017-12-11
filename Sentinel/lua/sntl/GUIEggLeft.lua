@@ -77,7 +77,7 @@ function GUIEggLeft:Initialize()
 
     end
 
-    self.visible = true
+    self.visible = false
 
    self.eggFractionTitle = GetGUIManager():CreateTextItem()
    self.eggFractionTitle:SetFontName("fonts/AgencyFB_small.fnt")
