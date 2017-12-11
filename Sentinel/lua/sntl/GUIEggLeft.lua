@@ -150,6 +150,11 @@ function GUIEggLeft:Update(deltaTime)
 
     end
 
+    -- Hack/Fix to ensure we have at least 1 pad displayed until we killed all the eggs
+    if GetGameInfoEntity():GetNumEggs() > 0 then
+        self.pads[1]:SetColor( kPadActiveColor )
+    end
+
     if GetGameInfoEntity():GetGameStarted() then
         self:SetIsVisible(true)
     else
