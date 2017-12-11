@@ -1,6 +1,8 @@
 local kTimeToReadyRoom = 8
 local kPregameLength = 15
 
+local kAllowedToSpawnDirectly = {}
+
 if Server then
 
     -- local orig_NS2Gamerules_CheckEndGame = NS2Gamerules.CheckEndGame
@@ -24,6 +26,29 @@ if Server then
 
     function NS2Gamerules:CheckForNoCommander(onTeam, commanderType)
         -- Remove the "no com" message
+    end
+
+    local old_NS2Gamerules_JoinTeam = NS2Gamerules.JoinTeam
+    function NS2Gamerules:JoinTeam(player, newTeamNumber, force)
+
+        local userId = player:GetClient():GetUserId()
+
+        if newTeamNumber == kMarineTeamType and kAllowedToSpawnDirectly[userId] then
+            force = true
+            kAllowedToSpawnDirectly[userId] = nil
+            Log("[sntl] First joining for %s", player)
+
+            local IPs = GetEntitiesForTeam("InfantryPortal", kMarineTeamType)
+
+            if #IPs > 0 and self:GetGameStarted() then
+                local extraRespawn = 1
+                IPs[1].respawnLeft = math.min(GetGameInfoEntity():GetNumMarineRespawnMax(),
+                                              IPs[1].respawnLeft + extraRespawn)
+                Log("[sntl] Adding %s extra respawn to balance", extraRespawn)
+            end
+        end
+
+        return old_NS2Gamerules_JoinTeam(self, player, newTeamNumber, force)
     end
 
     function NS2Gamerules:CheckGameStart()
@@ -140,3 +165,11 @@ if Server then
         return rval
     end
 end
+
+local function OnConnect(client)
+    if client and not client:GetIsVirtual() then
+        kAllowedToSpawnDirectly[client:GetUserId()] = true
+    end
+end
+
+Event.Hook("ClientConnect", OnConnect)
