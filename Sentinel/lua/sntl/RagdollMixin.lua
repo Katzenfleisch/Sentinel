@@ -6,13 +6,13 @@ Elixer.UseVersion(1.8)
 
 if Server then
 
-    local kDeathTime = 60 + 1.5
+    local kSntlDeathTime = 60 + 10
 
     local OldSetRagdoll = GetUpValue(RagdollMixin.OnTag, "SetRagdoll")
     -- Disable the "We need an Infantry portal" voice warning
     ReplaceUpValue(RagdollMixin.OnTag, "SetRagdoll",
                    function (self, deathTime)
-                       OldSetRagdoll(self, kDeathTime);
+                       OldSetRagdoll(self, kSntlDeathTime);
                        return
                    end,
                    { LocateRecurse = true; CopyUpValues = true; } )
