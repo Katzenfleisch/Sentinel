@@ -12,7 +12,6 @@ local function SetRandomAngle(ent)
 end
 
 function MarineTeam:SpawnInitialStructures(techPoint)
-
     local weapons = {Shotgun.kMapName, Shotgun.kMapName, Shotgun.kMapName,
                      GrenadeLauncher.kMapName,
                      Flamethrower.kMapName,
@@ -36,8 +35,8 @@ function MarineTeam:SpawnInitialStructures(techPoint)
     local armslab = armslab_origin and CreateEntity(ArmsLab.kMapName, armslab_origin[1], kMarineTeamType)
     if armslab then armslab:SetConstructionComplete() ; SetRandomAngle(armslab) end
 
-    local armory_origin = SNTL_SpreadedPlacementFromOrigin(GetExtents(kTechId.Armory), origin, 1, 2, 5)
-    local armory = armory_origin and CreateEntity(Armory.kMapName, armory_origin[1], kMarineTeamType)
+    local armory_origin = SNTL_SpreadedPlacementFromOrigin(GetExtents(kTechId.AdvancedArmory), origin, 1, 2, 5)
+    local armory = armory_origin and CreateEntity(AdvancedArmory.kMapName, armory_origin[1], kMarineTeamType)
     if armory then armory:SetConstructionComplete() ; SetRandomAngle(armory) end
 
     -- Spawn a few weapons as well
@@ -52,6 +51,46 @@ function MarineTeam:SpawnInitialStructures(techPoint)
         end
 
     end
+
+
+
+    -- -------------------
+
+    -- local unlockedResearches = {
+    --     kTechId.Weapons1,
+    --     kTechId.Weapons2,
+    --     kTechId.Armor1
+    -- }
+
+    local unlockedWeapons = {
+        kTechId.GrenadeTech,
+        kTechId.HeavyRifleTech
+    }
+
+    local marinetechtree = GetTechTree(kTeam1Index)
+    for _, up in ipairs(unlockedResearches) do
+        if (up and marinetechtree:GetTechNode(up) and not marinetechtree:GetTechNode(up):GetResearched())
+        then -- Unlock if not already on
+            local armslab = GetEntitiesForTeam("ArmsLab", kMarineTeamType)
+            if (#armslab > 0) then
+                marinetechtree:GetTechNode(up):SetResearched(true)
+                marinetechtree:QueueOnResearchComplete(up, armslab[1])
+            end
+        end
+    end
+
+
+    -- -- This code os not working so far
+    -- for _, up in ipairs(unlockedWeapons) do
+    --     if (up and marinetechtree:GetTechNode(up) and not marinetechtree:GetTechNode(up):GetResearched())
+    --     then -- Unlock if not already on
+    --         local AA = GetEntitiesForTeam("AdvancedArmory", kMarineTeamType)
+    --         if (#AA > 0) then
+    --             marinetechtree:GetTechNode(up):SetResearched(true)
+    --             marinetechtree:QueueOnResearchComplete(up, AA[1])
+    --         end
+    --     end
+    -- end
 
     return
 
