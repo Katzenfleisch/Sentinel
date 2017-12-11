@@ -90,8 +90,6 @@ function GUIObjective:Initialize()
     -- self.background:SetColor(kBackgroundColor)
 
 
-   self.objectiveTitle:SetText("Objective: Kill all the eggs")
-
 end
 
 function GUIObjective:SetIsVisible(state)
@@ -127,6 +125,12 @@ function GUIObjective:Update(deltaTime)
     then
         self:SetIsVisible(false)
         return
+    end
+
+    if GetGameInfoEntity():GetNumEggs() > 0 then
+        self.objectiveTitle:SetText("Objective: 1/2 Kill all the eggs")
+    else
+        self.objectiveTitle:SetText("Objective: 2/2 Retreat to the main base PG")
     end
 
     if GetGameInfoEntity():GetGameStarted() then
