@@ -45,7 +45,7 @@ function MarineTeam:SpawnInitialStructures(techPoint)
     local weapons_origins = SNTL_SpreadedPlacementFromOrigin(GetExtents(kTechId.Shotgun), weapons_origins[1], #weapons, 0, 2)
 
     for i, orig in ipairs(weapons_origins) do
-        local weapon = CreateEntity(weapons[i], orig, kMarineTeamType)
+        local weapon = CreateEntity(weapons[i], orig + Vector(0, 0.5, 0), kMarineTeamType)
 
         if weapon and weapon.GetVariantModel and weapon.SetModel then
             weapon:SetModel( weapon:GetVariantModel() )
