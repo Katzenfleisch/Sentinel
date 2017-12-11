@@ -17,6 +17,7 @@ local function ClearGUIScripts(self)
     if (Client) then
         if self.GUIEggLeft then GetGUIManager():DestroyGUIScript(self.GUIEggLeft) end
         if self.GUISpawnLeft then GetGUIManager():DestroyGUIScript(self.GUISpawnLeft) end
+        if self.GUIObjective then GetGUIManager():DestroyGUIScript(self.GUIObjective) end
     end
 end
 
@@ -25,6 +26,7 @@ local function CreateGUISripts(self)
     if (Client and self == Client.GetLocalPlayer()) then
         self.GUIEggLeft = GetGUIManager():CreateGUIScript("sntl/GUIEggLeft")
         self.GUISpawnLeft = GetGUIManager():CreateGUIScript("sntl/GUIRespawnLeft")
+        self.GUIObjective = GetGUIManager():CreateGUIScript("sntl/GUIObjective")
     end
 end
 
