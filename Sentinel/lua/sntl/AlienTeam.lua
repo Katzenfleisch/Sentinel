@@ -98,7 +98,7 @@ function AlienTeam:UpdateFillerBots()
     local gamerules = GetGamerules()
     local botTeamController = gamerules:GetBotTeamController()
     local marineTeam = gamerules:GetTeam(kMarineTeamType)
-    local botCount = math.ceil(marineTeam:GetHumanPlayerCount() * 1.5)
+    local botCount = math.ceil(marineTeam:GetHumanPlayerCount() * 3)
 
     gamerules:SetMaxBots(botCount, false)
 end
