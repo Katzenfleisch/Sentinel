@@ -109,7 +109,13 @@ end
 
 function AlienTeam:UpdateNoMoreEggs()
 
-    self.sntl_numEggs = #GetEntitiesForTeam("Egg", kAlienTeamType)
+    local numEggs = 0
+
+    for _, egg in ipairs(GetEntitiesForTeam("Egg", kAlienTeamType)) do
+        numEggs = numEggs + (egg:GetIsAlive() and 1 or 0)
+    end
+    self.sntl_numEggs = numEggs
+
     GetGameInfoEntity():SetNumEggs(self.sntl_numEggs)
     if not self.sntl_noMoreEggs and self:GetNumEggs() == 0 then
         local pgs = GetEntitiesForTeam("PhaseGate", kMarineTeamType)

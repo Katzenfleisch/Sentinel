@@ -1,3 +1,6 @@
+Script.Load("lua/sntl/Elixer_Utility.lua")
+Elixer.UseVersion(1.8)
+
 Script.Load("lua/InfestationMixin.lua")
 
 local kEggInfestDuration = 60
@@ -67,6 +70,7 @@ function Egg:OnInitialized()
 
 end
 
+
 local old_Egg_SpawnPlayer = Egg.SpawnPlayer
 function Egg:SpawnPlayer(player)
 
@@ -95,5 +99,24 @@ function Egg:SpawnPlayer(player)
 
 end
 
+if Server then
+    -- NOTE: Eggs entities are destroyed here yet, otherwise infestation would immediately vanish.
+    -- InfestationMixin handles allowing the entity to be destroyed, which is then handled in
+    -- Cyst:OnUpdate().
+    local RequeuePlayer = GetUpValue(Egg.OnKill, "RequeuePlayer")
+    function Egg:OnKill(attacker, doer, point, direction)
+
+        RequeuePlayer(self)
+        self:TriggerEffects("egg_death")
+        self:SetModel(nil)
+        -- DestroyEntity(self) -- Handled my the infesation mixin
+
+
+    end
+end
+
+function Egg:GetIsFree()
+    return self.queuedPlayerId == nil and self:GetIsAlive()
+end
 
 Shared.LinkClassToMap("Egg", nil, networkVars)
