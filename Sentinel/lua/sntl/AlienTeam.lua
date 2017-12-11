@@ -109,8 +109,6 @@ end
 
 function AlienTeam:UpdateNoMoreEggs()
 
-    if SNTL_LimitCallFrequency(AlienTeam.UpdateNoMoreEggs, 1) then return end
-
     self.sntl_numEggs = #GetEntitiesForTeam("Egg", kAlienTeamType)
     GetGameInfoEntity():SetNumEggs(self.sntl_numEggs)
     if not self.sntl_noMoreEggs and self:GetNumEggs() == 0 then
