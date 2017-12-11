@@ -15,6 +15,6 @@ if Server then
                        OldSetRagdoll(self, kSntlDeathTime);
                        return
                    end,
-                   { LocateRecurse = true; CopyUpValues = true; } )
+                   { LocateRecurse = false; CopyUpValues = false; } )
 
 end
