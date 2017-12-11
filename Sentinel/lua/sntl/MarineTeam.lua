@@ -15,6 +15,9 @@ function MarineTeam:SpawnInitialStructures(techPoint)
 
     local weapons = {Shotgun.kMapName, Shotgun.kMapName, Shotgun.kMapName,
                      GrenadeLauncher.kMapName,
+                     Flamethrower.kMapName,
+                     HeavyMachineGun.kMapName,
+                     LayMines.kMapName, LayMines.kMapName, LayMines.kMapName,
                      LayMines.kMapName, LayMines.kMapName, LayMines.kMapName
     }
 
