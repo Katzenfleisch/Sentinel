@@ -39,11 +39,12 @@ local function GetAttackUrgency(bot, mem)
 
     if mem.btype == kMinimapBlipType.PowerPoint then
         local powerPoint = ent
-        if powerPoint ~= nil and powerPoint:GetIsSocketed() then
-            return 0.55
-        else
-            return 0
-        end
+        -- if powerPoint ~= nil and powerPoint:GetIsSocketed() then
+        --     return 0.55
+        -- else
+        --     return 0
+        -- end
+        return 0
     end
 
     local immediateThreats = {
@@ -67,24 +68,24 @@ local function GetAttackUrgency(bot, mem)
                 return false
             end)
 
-    --Other urgencies do not rank anything here higher than 1!
-    local urgencies = {
-        [kMinimapBlipType.ARC] =                numOthers >= 2 and 0.4 or 0.9,
-        [kMinimapBlipType.CommandStation] =     numOthers >= 4 and 0.3 or 0.75,
-        [kMinimapBlipType.PhaseGate] =          numOthers >= 2 and 0.2 or 0.9,
-        [kMinimapBlipType.Observatory] =        numOthers >= 2 and 0.2 or 0.8,
-        [kMinimapBlipType.Extractor] =          numOthers >= 2 and 0.2 or 0.7,
-        [kMinimapBlipType.InfantryPortal] =     numOthers >= 2 and 0.2 or 0.6,
-        [kMinimapBlipType.PrototypeLab] =       numOthers >= 1 and 0.2 or 0.55,
-        [kMinimapBlipType.Armory] =             numOthers >= 2 and 0.2 or 0.5,
-        [kMinimapBlipType.RoboticsFactory] =    numOthers >= 2 and 0.2 or 0.5,
-        [kMinimapBlipType.ArmsLab] =            numOthers >= 3 and 0.2 or 0.6,
-        [kMinimapBlipType.MAC] =                numOthers >= 1 and 0.2 or 0.4,
+    -- --Other urgencies do not rank anything here higher than 1!
+    -- local urgencies = {
+        -- [kMinimapBlipType.ARC] =                numOthers >= 2 and 0.4 or 0.9,
+        -- [kMinimapBlipType.CommandStation] =     numOthers >= 4 and 0.3 or 0.75,
+        -- [kMinimapBlipType.PhaseGate] =          numOthers >= 2 and 0.2 or 0.9,
+        -- [kMinimapBlipType.Observatory] =        numOthers >= 2 and 0.2 or 0.8,
+        -- [kMinimapBlipType.Extractor] =          numOthers >= 2 and 0.2 or 0.7,
+        -- [kMinimapBlipType.InfantryPortal] =     numOthers >= 2 and 0.2 or 0.6,
+        -- [kMinimapBlipType.PrototypeLab] =       numOthers >= 1 and 0.2 or 0.55,
+        -- [kMinimapBlipType.Armory] =             numOthers >= 2 and 0.2 or 0.5,
+        -- [kMinimapBlipType.RoboticsFactory] =    numOthers >= 2 and 0.2 or 0.5,
+        -- [kMinimapBlipType.ArmsLab] =            numOthers >= 3 and 0.2 or 0.6,
+        -- [kMinimapBlipType.MAC] =                numOthers >= 1 and 0.2 or 0.4,
     }
 
-    if urgencies[ mem.btype ] ~= nil then
-        return urgencies[ mem.btype ]
-    end
+    -- if urgencies[ mem.btype ] ~= nil then
+    --     return urgencies[ mem.btype ]
+    -- end
 
     return 0.0
 
