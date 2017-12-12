@@ -1,5 +1,3 @@
-Script.Load("lua/sntl/Elixer_Utility.lua")
-Elixer.UseVersion(1.8)
 
 local function SetRandomAngle(ent)
     -- Randomize starting angles

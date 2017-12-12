@@ -1,6 +1,3 @@
-Script.Load("lua/sntl/Elixer_Utility.lua")
-Elixer.UseVersion(1.8)
-
 Script.Load("lua/InfestationMixin.lua")
 
 local kEggInfestDuration = 60
