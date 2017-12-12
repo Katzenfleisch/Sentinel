@@ -11,11 +11,11 @@ function BotTeamController:UpdateBots()
 
     if self.MaxBots < 1 then return end --BotTeamController is disabled
 
-    local team1HumanNum, _            = self:GetPlayerNumbersForTeam(kTeam1Index)
+    local team1HumanNum, team1BotsNum = self:GetPlayerNumbersForTeam(kTeam1Index)
     local team2HumanNum, team2BotsNum = self:GetPlayerNumbersForTeam(kTeam2Index)
     local team2Count = team2BotsNum + team2HumanNum
 
-    local humanCount = team1HumanNum
+    local humanCount = team1HumanNum + team1BotsNum
     local maxTeamBots = math.ceil(self.MaxBots)
 
     -- Update Team 1
