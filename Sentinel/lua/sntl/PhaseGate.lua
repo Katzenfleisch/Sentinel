@@ -31,7 +31,7 @@ if Server then
             return false
         end
 
-        if old_PhaseGate_GetIsPowered(self) and self:GetIsDeployed() then
+        if old_PhaseGate_GetIsPowered(self) and self:GetIsAlive() and self:GetIsDeployed() then
             self.linked = true
             self.destinationEndpoint = self:GetOrigin()
             return true
