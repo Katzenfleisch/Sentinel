@@ -220,7 +220,7 @@ local function GetAttackUrgency(bot, mem)
         [kMinimapBlipType.Sentry] = true
     }
 
-    if distance < 15 and immediateThreats[mem.btype] then
+    if immediateThreats[mem.btype] then
         -- Attack the nearest immediate threat (urgency will be 1.1 - 2)
         return 1 + 1 / math.max(distance, 1)
     end
@@ -265,8 +265,7 @@ local function PerformAttackEntity( eyePos, bestTarget, bot, brain, move )
     local marinePos = bestTarget:GetOrigin()
 
     local doFire = false
-    AIA_WallJumpToTarget(bot, move, marinePos)
-    -- bot:GetMotion():SetDesiredMoveTarget( marinePos )
+    bot:GetMotion():SetDesiredMoveTarget( marinePos )
 
     local distance = eyePos:GetDistance(marinePos)
     if distance < 2.5 then
@@ -311,7 +310,7 @@ local function PerformAttackEntity( eyePos, bestTarget, bot, brain, move )
         if bot.jumpOffset == nil then
 
             local botToTarget = GetNormalizedVectorXZ(marinePos - eyePos)
-            local sideVector = botToTarget:CrossProduct(Vector(0, 1, 0))
+            local sideVector = botToTarget:CrossProduct(Vector(0, 0.7, 0))
             if math.random() < 0.5 then
                 bot.jumpOffset = botToTarget + sideVector
             else
