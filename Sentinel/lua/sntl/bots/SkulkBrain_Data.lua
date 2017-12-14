@@ -22,6 +22,166 @@ local kEvolutions = {
     kTechId.Onos
 }
 
+
+local function AIA_GetDirToNearestWall(bot)
+    local skulk = bot:GetPlayer()
+    local eyePos = skulk:GetEyePos()
+    local viewCoords = skulk:GetViewCoords()
+    local direction = bot:GetMotion().currMoveDir or viewCoords.zAxis
+
+    local leftWall = nil
+    local rightWall = nil
+    local moveDir = nil
+
+    local z = 4
+    local y = 6
+
+    leftWall = Shared.TraceRay(eyePos, eyePos + y * viewCoords.xAxis + z * direction,
+                               CollisionRep.Move, PhysicsMask.Bullets, EntityFilterOne(skulk))
+    if 0.2 < leftWall.fraction and leftWall.fraction < 0.9 then
+        moveDir = (leftWall.endPoint - eyePos):GetUnit() --direction + viewCoords.xAxis / 4
+    end
+
+    if not moveDir then
+        rightWall = Shared.TraceRay(eyePos, eyePos + -y * viewCoords.xAxis + z * direction,
+                                    CollisionRep.Move, PhysicsMask.Bullets, EntityFilterOne(skulk))
+        if 0.2 < rightWall.fraction and rightWall.fraction < 0.9 then
+            moveDir = (rightWall.endPoint - eyePos):GetUnit() --direction - viewCoords.xAxis / 4
+        end
+    end
+
+    if moveDir then
+        -- local p1 = skulk:GetOrigin() + direction * 10
+
+        -- local perpVect = Vector(-p1.x, p1.y, p1.z)
+        -- local p2 = p1 + perpVect * 1
+
+
+        if rightWall then
+            return ((eyePos + -4 * viewCoords.xAxis + 100 * direction) - eyePos):GetUnit()
+        else
+            return ((eyePos +  4 * viewCoords.xAxis + 100 * direction) - eyePos):GetUnit()
+        end
+
+        -- local p2 = skulk:GetOrigin() + moveDir * 100
+        -- local pDist = p1:GetDistanceTo(p2)
+
+        -- local p3 = p1 + (p2 - p1):GetUnit() * (pDist / 9)
+        -- local dir1 = (p3 - skulk:GetOrigin()):GetUnit()
+
+        -- return dir1
+
+    end
+    -- local dist_between_both_end = p2 + (p1 - p2):GetUnit() * (pDist / 2)
+
+    -- dist_between_both_end = dist_between_both_end
+
+    -- return moveDir
+    return moveDir
+end
+
+local function AIA_WallJumpToTarget(bot, move, targetPos)
+    local skulk = bot:GetPlayer()
+    local canWallJump = skulk:GetCanWallJump()
+    local recentlyWallJumped = skulk:GetRecentlyWallJumped()
+    local eyePos = skulk:GetEyePos()
+    local viewCoords = skulk:GetViewCoords()
+    -- AIA: Number of walljump allowed before forcing the skulk to hit the ground.
+    --      Prevents the skulks from getting stuck in ceilings
+    local maxWallJump = 4
+
+    -- Make another trace to see where to walljump to
+    local moveDir = bot:GetMotion().currMoveDir
+    local dist = skulk:GetOrigin():GetDistance(targetPos)
+
+    -- if bot.LeaveTunnelTowardDest and bot:LeaveTunnelTowardDest(targetPos) then
+    --     return
+    -- end
+
+    -- if skulk.AIA_waitRegroup then
+    --    local sighted = skulk:GetIsSighted()
+    --    if not sighted then
+    --       move.commands = AddMoveCommand( move.commands, Move.MovementModifier ) -- Wait a bit
+    --    end
+    --    skulk.AIA_waitRegroup = nil
+    -- end
+    if bot.AIA_WallJumped == nil then
+        bot.AIA_WallJumped = 0
+    end
+
+    bot:GetMotion():SetDesiredViewTarget(nil)
+    -- bot:GetMotion():SetDesiredViewTarget(viewCoords.origin + bot:GetMotion().currMoveDir * 4 + viewCoords.xAxis + viewCoords.yAxis)
+    -- bot:GetMotion():SetDesiredViewTarget(viewCoords.origin + viewCoords.xAxis + viewCoords.yAxis + viewCoords.zAxis*4)
+    bot:GetMotion():SetDesiredMoveTarget(targetPos)
+
+    -- if bot.jumpOffset == nil then
+
+    --     local botToTarget = GetNormalizedVectorXZ( - eyePos)
+    --     local sideVector = botToTarget:CrossProduct(Vector(0, 1, 0))
+    --     if math.random() < 0.5 then
+    --         bot.jumpOffset = botToTarget + sideVector
+    --     else
+    --         bot.jumpOffset = botToTarget - sideVector
+    --     end
+    --     bot:GetMotion():SetDesiredViewTarget( bestTarget:GetEngagementPoint() )
+
+    -- end
+
+    -- bot:GetMotion():SetDesiredMoveDirection( bot.jumpOffset )
+
+    local move_side = 1
+    local move_period = 0.1
+    local move_force = Vector(0, 0.4, 0)
+    local now = Shared.GetTime()
+
+    bot.lastWallJump = bot.lastWallJump or Shared.GetTime()
+    bot.jumpOffset = bot.jumpOffset or Shared.GetTime()
+    -- if bot.lastWallJump < now and now < bot.lastWallJump + move_period then
+    --     local sideVector = moveDir:CrossProduct(move_force)
+    --     -- if now < bot.lastWallJump + move_period * 1 then -- 1/3 one side, 2/3 the other
+    --     if move_side == 1 then
+    --         bot.jumpOffset = moveDir + sideVector        -- 
+    --     else
+    --         bot.jumpOffset = moveDir - sideVector
+    --     end
+    --     bot:GetMotion():SetDesiredMoveDirection( bot.jumpOffset )
+    -- end
+
+    -- if bot.lastWallJump + move_period < now then
+    --     bot.lastWallJump = Shared.GetTime()
+    --     move_side = move_side * -1
+    -- end
+
+
+    bot.jumpAfterWallJump = bot.jumpAfterWallJump or 0
+    -- if (dist > kAIA_attack_dist and kAIA_wall_jump) then
+    if (canWallJump) then
+        -- AIA: Skulks need to touch the ground between two walljump, present stuck in ceilings
+        if (not recentlyWallJumped) and bot.AIA_WallJumped < maxWallJump
+        then
+            move.commands = AddMoveCommand( move.commands, Move.Jump )
+            bot.AIA_WallJumped = bot.AIA_WallJumped + 1
+            bot.jumpAfterWallJump = 4
+            bot.lastJumpTime = Shared.GetTime()
+        end
+    else
+        if skulk:GetIsOnGround() and bot.jumpAfterWallJump > 0 then
+            bot.AIA_WallJumped = 0
+            bot.jumpAfterWallJump = bot.jumpAfterWallJump - 1
+            move.commands = AddMoveCommand( move.commands, Move.Jump )
+        end
+    end
+
+    -- end
+    -- moveDir = AIA_GetDirToNearestWall(bot)
+    -- if moveDir then
+    --     bot:GetMotion():SetDesiredMoveDirection( moveDir + Vector(0, 0.4, 0) )
+    -- end
+    -- move.commands = AddMoveCommand( move.commands, Move.Crouch ) -- So we do not get stuck in ceilings
+
+    -- bot:GetMotion():SetDesiredMoveDirection(  bot:GetMotion().desiredMoveDirection )
+end
+
 ------------------------------------------
 --  More urgent == should really attack it ASAP
 ------------------------------------------
@@ -81,7 +241,7 @@ local function GetAttackUrgency(bot, mem)
         -- [kMinimapBlipType.RoboticsFactory] =    numOthers >= 2 and 0.2 or 0.5,
         -- [kMinimapBlipType.ArmsLab] =            numOthers >= 3 and 0.2 or 0.6,
         -- [kMinimapBlipType.MAC] =                numOthers >= 1 and 0.2 or 0.4,
-    }
+    -- }
 
     -- if urgencies[ mem.btype ] ~= nil then
     --     return urgencies[ mem.btype ]
@@ -99,7 +259,8 @@ local function PerformAttackEntity( eyePos, bestTarget, bot, brain, move )
     local marinePos = bestTarget:GetOrigin()
 
     local doFire = false
-    bot:GetMotion():SetDesiredMoveTarget( marinePos )
+    AIA_WallJumpToTarget(bot, move, marinePos)
+    -- bot:GetMotion():SetDesiredMoveTarget( marinePos )
 
     local distance = eyePos:GetDistance(marinePos)
     if distance < 2.5 then
@@ -172,8 +333,9 @@ local function PerformAttack( eyePos, mem, bot, brain, move )
     else
 
         -- mem is too far to be relevant, so move towards it
-        bot:GetMotion():SetDesiredViewTarget(nil)
-        bot:GetMotion():SetDesiredMoveTarget(mem.lastSeenPos)
+        -- bot:GetMotion():SetDesiredViewTarget(nil)
+        AIA_WallJumpToTarget(bot, move, mem.lastSeenPos)
+        -- bot:GetMotion():SetDesiredMoveTarget(mem.lastSeenPos)
 
     end
 
@@ -189,25 +351,26 @@ end
 kSkulkBrainActions =
 {
 
-    ------------------------------------------
-    --
-    ------------------------------------------
-    function(bot, brain)
-        return { name = "debug idle", weight = 0.001,
-                perform = function(move)
-                    bot:GetMotion():SetDesiredMoveTarget(nil)
-                    -- there is nothing obvious to do.. figure something out
-                    -- like go to the marines, or defend
-                end }
-    end,
+    -- ------------------------------------------
+    -- --
+    -- ------------------------------------------
+    -- function(bot, brain)
+    --     return { name = "debug idle", weight = 0.001,
+    --             perform = function(move)
+    --                 bot:GetMotion():SetDesiredMoveTarget(nil)
+    --                 -- there is nothing obvious to do.. figure something out
+    --                 -- like go to the marines, or defend
+    --             end }
+    -- end,
 
     ------------------------------------------
     --
     ------------------------------------------
     CreateExploreAction( 0.01, function(pos, targetPos, bot, brain, move)
-                bot:GetMotion():SetDesiredMoveTarget(targetPos)
-                bot:GetMotion():SetDesiredViewTarget(nil)
-                end ),
+                             AIA_WallJumpToTarget(bot, move, targetPos)
+                             -- bot:GetMotion():SetDesiredMoveTarget(targetPos)
+                             -- bot:GetMotion():SetDesiredViewTarget(nil)
+                               end ),
 
     ------------------------------------------
     --
@@ -304,6 +467,7 @@ kSkulkBrainActions =
         local skulk = bot:GetPlayer()
         local teamNumber = skulk:GetTeamNumber()
 
+        -- TODO: change that to check for eggs instead
         local hiveUnderAttack
         bot.hiveprotector = bot.hiveprotector or math.random()
         if bot.hiveprotector > 0.5 then
@@ -320,8 +484,9 @@ kSkulkBrainActions =
 
         return { name = name, weight = weight,
             perform = function(move)
-                bot:GetMotion():SetDesiredMoveTarget(hiveUnderAttack and hiveUnderAttack:GetOrigin())
-                bot:GetMotion():SetDesiredViewTarget(nil)
+                AIA_WallJumpToTarget(bot, move, hiveUnderAttack and hiveUnderAttack:GetOrigin())
+                -- bot:GetMotion():SetDesiredMoveTarget(hiveUnderAttack and hiveUnderAttack:GetOrigin())
+                -- bot:GetMotion():SetDesiredViewTarget(nil)
             end }
 
     end,
@@ -438,8 +603,9 @@ kSkulkBrainActions =
 
         return { name = name, weight = weight,
             perform = function(move)
-                bot:GetMotion():SetDesiredMoveTarget(bestPheromoneLocation)
-                bot:GetMotion():SetDesiredViewTarget(nil)
+                AIA_WallJumpToTarget(bot, move, bestPheromoneLocation)
+                -- bot:GetMotion():SetDesiredMoveTarget(bestPheromoneLocation)
+                -- bot:GetMotion():SetDesiredViewTarget(nil)
             end }
     end,
 
@@ -473,8 +639,9 @@ kSkulkBrainActions =
                             DebugPrint("unknown order type: %s", ToString(order:GetType()) )
                         end
 
-                        bot:GetMotion():SetDesiredMoveTarget( order:GetLocation() )
-                        bot:GetMotion():SetDesiredViewTarget( nil )
+                        AIA_WallJumpToTarget(bot, move, order:GetLocation())
+                        -- bot:GetMotion():SetDesiredMoveTarget( order:GetLocation() )
+                        -- bot:GetMotion():SetDesiredViewTarget( nil )
 
                     end
                 end
