@@ -134,13 +134,13 @@ local function AIA_WallJumpToTarget(bot, move, targetPos)
     local move_force = Vector(0, 0.4, 0)
     local now = Shared.GetTime()
 
-    bot.lastWallJump = bot.lastWallJump or Shared.GetTime()
-    bot.jumpOffset = bot.jumpOffset or Shared.GetTime()
+    -- bot.lastWallJump = bot.lastWallJump or Shared.GetTime()
+    -- bot.jumpOffset = bot.jumpOffset or Shared.GetTime()
     -- if bot.lastWallJump < now and now < bot.lastWallJump + move_period then
     --     local sideVector = moveDir:CrossProduct(move_force)
     --     -- if now < bot.lastWallJump + move_period * 1 then -- 1/3 one side, 2/3 the other
     --     if move_side == 1 then
-    --         bot.jumpOffset = moveDir + sideVector        -- 
+    --         bot.jumpOffset = moveDir + sideVector        --
     --     else
     --         bot.jumpOffset = moveDir - sideVector
     --     end
@@ -153,6 +153,7 @@ local function AIA_WallJumpToTarget(bot, move, targetPos)
     -- end
 
 
+    bot.lastWallJump = bot.lastWallJump or 0
     bot.jumpAfterWallJump = bot.jumpAfterWallJump or 0
     -- if (dist > kAIA_attack_dist and kAIA_wall_jump) then
     if (canWallJump) then
@@ -162,13 +163,14 @@ local function AIA_WallJumpToTarget(bot, move, targetPos)
             move.commands = AddMoveCommand( move.commands, Move.Jump )
             bot.AIA_WallJumped = bot.AIA_WallJumped + 1
             bot.jumpAfterWallJump = 4
-            bot.lastJumpTime = Shared.GetTime()
+            bot.lastWallJump = Shared.GetTime()
         end
     else
-        if skulk:GetIsOnGround() and bot.jumpAfterWallJump > 0 then
+        if skulk:GetIsOnGround() and (bot.jumpAfterWallJump > 0 or bot.lastWallJump + 5 < Shared.GetTime()) then
             bot.AIA_WallJumped = 0
             bot.jumpAfterWallJump = bot.jumpAfterWallJump - 1
             move.commands = AddMoveCommand( move.commands, Move.Jump )
+            bot.lastWallJump = Shared.GetTime()
         end
     end
 
