@@ -18,6 +18,10 @@ function MarineTeam:SpawnInitialStructures(techPoint)
                      LayMines.kMapName, LayMines.kMapName, LayMines.kMapName
     }
 
+    if not GetGameInfoEntity():GetIsDedicated() then
+        table.insert(weapons, Jetpack.kMapName)
+    end
+
     assert(techPoint ~= nil)
 
     local origin = techPoint:GetOrigin()
