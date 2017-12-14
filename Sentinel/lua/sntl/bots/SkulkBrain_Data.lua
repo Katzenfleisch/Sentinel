@@ -153,7 +153,7 @@ local function AIA_WallJumpToTarget(bot, move, targetPos)
     -- end
 
 
-    bot.lastWallJump = bot.lastWallJump or 0
+    bot.timeOfJump = bot.timeOfJump or 0
     bot.jumpAfterWallJump = bot.jumpAfterWallJump or 0
     -- if (dist > kAIA_attack_dist and kAIA_wall_jump) then
     if (canWallJump) then
@@ -163,15 +163,19 @@ local function AIA_WallJumpToTarget(bot, move, targetPos)
             move.commands = AddMoveCommand( move.commands, Move.Jump )
             bot.AIA_WallJumped = bot.AIA_WallJumped + 1
             bot.jumpAfterWallJump = 4
-            bot.lastWallJump = Shared.GetTime()
+            bot.timeOfJump = Shared.GetTime()
         end
     else
-        if skulk:GetIsOnGround() and (bot.jumpAfterWallJump > 0 or bot.lastWallJump + 5 < Shared.GetTime()) then
+        if skulk:GetIsOnGround() and (bot.jumpAfterWallJump > 0 or bot.timeOfJump + 5 < Shared.GetTime()) then
             bot.AIA_WallJumped = 0
             bot.jumpAfterWallJump = bot.jumpAfterWallJump - 1
             move.commands = AddMoveCommand( move.commands, Move.Jump )
-            bot.lastWallJump = Shared.GetTime()
+            bot.timeOfJump = Shared.GetTime()
         end
+    end
+
+    if Shared.GetTime() < bot.timeOfJump + 0.5 then
+        move.commands = AddMoveCommand( move.commands, Move.Crouch )
     end
 
     -- end
