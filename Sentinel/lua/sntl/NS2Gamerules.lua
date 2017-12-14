@@ -136,7 +136,7 @@ if Server then
     local old_NS2Gamerules_OnUpdate = NS2Gamerules.OnUpdate
     function NS2Gamerules:OnUpdate(timePassed)
         old_NS2Gamerules_OnUpdate(self, timePassed)
-        self:KillEnemiesNearBase(timePassed)
+        -- self:KillEnemiesNearBase(timePassed)
     end
 
 
