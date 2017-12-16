@@ -10,7 +10,8 @@ if Server then
     function InfantryPortal:OnInitialized()
         old_InfantryPortal_OnInitialized(self)
 
-        self.respawnLeft = 3 + self:GetTeam():GetNumPlayers()
+        self.respawnLeft = 3 + self:GetTeam():GetNumPlayers() * 1.15
+        Log("Setting respawn count to %s", self.respawnLeft)
         GetGameInfoEntity():SetNumMarineRespawnLeft(self.respawnLeft)
         GetGameInfoEntity():SetNumMarineRespawnMax(self.respawnLeft)
     end
