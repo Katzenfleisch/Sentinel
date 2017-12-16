@@ -73,6 +73,7 @@ local function GetSpawnLocationCandidates(maxCount)
 end
 
 local function SpawnRandomEggs(numGroup, numEggPerGroup, nearOrigin)
+    local eggs = {}
     local candidatePos = 1
     local spawnCandidates = GetSpawnLocationCandidates()
 
@@ -97,11 +98,17 @@ local function SpawnRandomEggs(numGroup, numEggPerGroup, nearOrigin)
     for i = 1, numGroup do
         local pos = spawnCandidates[candidatePos]:GetOrigin()
 
-        SNTL_SpawnEggsAroundPos(pos, numEggPerGroup)
+        local new_eggs = SNTL_SpawnEggsAroundPos(pos, numEggPerGroup)
+
+        if new_eggs then
+            for _, egg in ipairs(new_eggs) do
+                table.insert(eggs, egg)
+            end
+        end
         candidatePos = 1 + (candidatePos % #spawnCandidates)
     end
 
-    return true
+    return true, eggs
 end
 
 local old_AlienTeam_OnResetComplete = AlienTeam.OnResetComplete
