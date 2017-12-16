@@ -1,3 +1,3 @@
 function GetFriendlyFire()
-    return true
+    return false
 end

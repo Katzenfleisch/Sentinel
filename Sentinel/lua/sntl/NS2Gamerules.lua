@@ -81,9 +81,9 @@ if Server then
     end
 
 
-    function NS2Gamerules:GetFriendlyFire()
-        return true
-    end
+    -- function NS2Gamerules:GetFriendlyFire()
+    --     return true
+    -- end
 
     -- sntl: Don't move pp to the ready rooms, keep them on the team
     function NS2Gamerules:UpdateToReadyRoom()
