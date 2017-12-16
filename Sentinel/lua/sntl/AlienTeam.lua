@@ -1,5 +1,5 @@
 
-local kMinDistToSpawnEgg = 30
+local kMinDistToSpawnEgg = 40
 local networkVars =
 {
         sntl_numEggs = "integer",
