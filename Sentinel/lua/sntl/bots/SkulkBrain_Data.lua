@@ -4,16 +4,16 @@ Script.Load("lua/bots/BrainSenses.lua")
 
 local kUpgrades = {
     kTechId.Crush,
-    kTechId.Carapace,
     kTechId.Regeneration,
+    kTechId.Adrenaline,
 
     kTechId.Vampirism,
     kTechId.Aura,
-    kTechId.Focus,
+    kTechId.Celerity,
 
     kTechId.Silence,
-    kTechId.Celerity,
-    kTechId.Adrenaline,
+    kTechId.Focus,
+    kTechId.Carapace,
 }
 
 local kEvolutions = {
