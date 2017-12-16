@@ -139,10 +139,38 @@ end
 -- end
 
 if Server then
+
+    local function RequeuePlayer(self)
+
+        if self.queuedPlayerId then
+
+            local player = Shared.GetEntity(self.queuedPlayerId)
+            local team = self:GetTeam()
+            -- There are cases when the player or team is no longer valid such as
+            -- when Egg:OnDestroy() is called during server shutdown.
+            if player and team then
+
+                if not player:isa("AlienSpectator") then
+                    error("AlienSpectator expected, instead " .. player:GetClassName() .. " was in queue")
+                end
+
+                player:SetEggId(Entity.invalidId)
+                player:SetIsRespawning(false)
+                team:PutPlayerInRespawnQueue(player)
+
+            end
+
+        end
+
+        -- Don't spawn player
+        self:SetEggFree()
+
+    end
+
     -- NOTE: Eggs entities are destroyed here yet, otherwise infestation would immediately vanish.
     -- InfestationMixin handles allowing the entity to be destroyed, which is then handled in
     -- Cyst:OnUpdate().
-    local RequeuePlayer = GetUpValue(Egg.OnKill, "RequeuePlayer")
+    -- local RequeuePlayer = GetUpValue(Egg.OnKill, "RequeuePlayer")
     function Egg:OnKill(attacker, doer, point, direction)
 
         RequeuePlayer(self)

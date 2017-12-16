@@ -1,5 +1,5 @@
-Script.Load("lua/sntl/Elixer_Utility.lua")
-Elixer.UseVersion(1.8)
+-- Script.Load("lua/sntl/Elixer_Utility.lua")
+-- Elixer.UseVersion(1.8)
 
 local function ModLoader_SetupFileHook(file, replace_type)
     local sntl_file = string.gsub(file, "lua/", "lua/sntl/", 1)

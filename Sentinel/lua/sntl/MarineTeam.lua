@@ -126,7 +126,8 @@ function MarineTeam:GetHasTeamLost()
 
 end
 
--- Disable the "We need an Infantry portal" voice warning
-ReplaceUpValue(MarineTeam.Update, "CheckForNoIPs",
-               function (self) return end,
-               { LocateRecurse = true; CopyUpValues = true; } )
+
+-- -- Disable the "We need an Infantry portal" voice warning
+-- ReplaceUpValue(MarineTeam.Update, "CheckForNoIPs",
+--                function (self) return end,
+--                { LocateRecurse = true; CopyUpValues = true; } )
