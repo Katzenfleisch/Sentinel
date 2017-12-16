@@ -202,6 +202,67 @@ function AlienTeam:SpawnInitialStructures(techPoint)
     local kNumEggPerGroup = 6
     SpawnRandomEggs(kNumEggGroup, kNumEggPerGroup, techPoint:GetOrigin())
     GetGameInfoEntity():SetNumMaxEggs(kNumEggGroup * kNumEggPerGroup)
+
+    local spawnCandidates = GetSpawnLocationCandidates()
+
+    local buildings = {
+                       Veil.kMapName, Veil.kMapName, Veil.kMapName,
+                       Spur.kMapName, Spur.kMapName, Spur.kMapName,
+                       Hydra.kMapName, Hydra.kMapName, Whip.kMapName,
+                       Clog.kMapName, Clog.kMapName, Clog.kMapName,
+                       Shell.kMapName, Shell.kMapName, Shell.kMapName,
+                       Shade.kMapName
+    }
+
+    local origins = SNTL_SpreadedPlacementFromOrigin(GetExtents(kTechId.Shade), techPoint:GetOrigin(), 1, 2, 5)
+    local origins = SNTL_SpreadedPlacementFromOrigin(GetExtents(kTechId.Shade), origins[1], #buildings, 0, 3)
+
+    local b = CreateEntity(TunnelEntrance.kMapName, techPoint:GetOrigin(), kAlienTeamType)
+    b:SetConstructionComplete()
+    for i, orig in ipairs(origins) do
+        b = CreateEntity(buildings[i], orig, kAlienTeamType)
+
+        if not b:isa("Clog") and not b:isa("Whip") and not b:isa("Hydra") then
+            local c = CreateEntity(Cyst.kMapName, orig, kAlienTeamType)
+            if b.SetConstructionComplete then
+                b:SetConstructionComplete()
+            end
+            b:SetModel(nil)
+            c:SetModel(nil)
+            c:SetConstructionComplete()
+        end
+    end
+
+    Shared.SortEntitiesByDistance(techPoint:GetOrigin(), spawnCandidates)
+    for i = 1, #spawnCandidates do
+        local orig = spawnCandidates[i]:GetOrigin()
+        if #GetEntitiesWithMixinForTeamWithinRange("Live", kAlienTeamType, orig, 10) == 0 then
+
+            local spawnPoint = SNTL_SpreadedPlacementFromOrigin(GetExtents(kTechId.Armory), orig, 1, 1, 5)
+            if (spawnPoint) then
+                spawnPoint = spawnPoint[1]
+            end
+
+            local a = CreateEntity(Armory.kMapName, spawnPoint, kMarineTeamType)
+
+            if a then
+                -- local location = GetLocationForPoint(a:GetModelOrigin())
+                -- local powerNode = location ~= nil and GetPowerPointForLocation(location:GetName())
+
+                -- if powerNode then
+                --     powerNode:SocketPowerNode()
+                --     Log("[sntl] PowerPoint in %s correclty socked", location and location:GetName())
+                -- else
+                --     Log("[sntl] No powerpoint found for location %s", location and location:GetName())
+                -- end
+
+                -- a:AddTimedCallback(ConstructMixin.SetConstructionComplete, 0.1)
+                a:SetConstructionComplete()
+            end
+            break
+        end
+    end
+
     return -- Disable, do not spawn any alien base
 end
 
