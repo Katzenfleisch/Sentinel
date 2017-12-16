@@ -83,9 +83,9 @@ function MarineTeam:SpawnInitialStructures(techPoint)
     -- -------------------
 
     local unlockedResearches = {
-        kTechId.Weapons1,
-        kTechId.Weapons2,
-        kTechId.Armor1
+        -- kTechId.Weapons1,
+        -- kTechId.Weapons2,
+        -- kTechId.Armor1
     }
 
     local marinetechtree = GetTechTree(kTeam1Index)
@@ -102,7 +102,7 @@ function MarineTeam:SpawnInitialStructures(techPoint)
 
 
     local unlockedWeapons = {
-        kTechId.GrenadeTech
+        -- kTechId.GrenadeTech
     }
 
     for _, up in ipairs(unlockedWeapons) do
@@ -150,6 +150,261 @@ function MarineTeam:GetHasTeamLost()
 
 end
 
+
+function getRtPoints(classname)
+    local rt = {}
+    local cl = classname
+    if (cl == nil) then
+        cl = "ResourcePoint"
+    end
+    if (cl == "TechPoint" or cl == "ResourcePoint" or cl == "PowerPoint") then
+        local rts = Shared.GetEntitiesWithClassname(cl)
+        for index, entity in ientitylist(rts) do
+            table.insert(rt, entity)
+        end
+    else
+        for index, entity in ipairs(GetEntities(cl)) do
+            table.insert(rt, entity)
+        end
+    end
+
+    return rt
+end
+
+function getRandomRT()
+    local rt = getRtPoints()
+    if (#rt == 0) then
+        rt = getRtPoints("TechPoint")
+   end
+
+    rt_nb = math.random(1, #rt)
+    return rt[rt_nb]
+end
+
+
+function getRandomPowerNode()
+    local rt = GetEntities("PowerPoint")
+    rt_nb = math.random(1, #rt)
+    return rt[rt_nb]
+end
+
+function MarineTeam:randomBonusDrop()
+
+    if SNTL_LimitCallFrequency(MarineTeam.randomBonusDrop, 5) then return end
+
+    local nb_drop = #GetEntities("AmmoPack")-- + #GetEntities("MedPack") + #GetEntities("CatPack")
+    if (nb_drop < 20) then
+        local ent = nil
+        local rt = nil
+
+        rt = nil--getRandomRT()
+
+        for i = 0, 10 do -- Choose a RT with no drop if possible
+            local hasRtDropAlready = false
+
+            local _rt = getRandomRT()
+            if (math.random() < 0.5) then
+                _rt = getRandomPowerNode()
+            end
+
+            -- Prevent drop in bases
+            if (_rt) then
+                if (#GetEntitiesForTeamWithinRange("Armory", 1, _rt:GetOrigin(), 40) == 0) then
+                    for _, dropName in ipairs({"AmmoPack", "MedPack", "CatPack"}) do
+                        if (#GetEntitiesForTeamWithinRange(dropName, 2, _rt:GetOrigin(), 3) > 1) then
+                            hasRtDropAlready = true
+                            break
+                        end
+                    end
+                    if (hasRtDropAlready == false) then
+                        rt = _rt
+                        break
+                    end
+                end
+            end
+        end
+
+        if (rt) then
+            local rand = math.random()
+            local spawnPoint = nil
+            for e = 0, 3 do
+                spawnPoint = SNTL_SpreadedPlacementFromOrigin(GetExtents(kTechId.ArmsLab), rt:GetOrigin(), 1, 2, 5)
+                if (spawnPoint) then
+                    spawnPoint = spawnPoint[1]
+                    break
+                end
+            end
+            if (spawnPoint) then
+                ent = CreateEntity(AmmoPack.kMapName, spawnPoint, 1)
+            end
+        end
+
+    end
+end
+
+function MarineTeam:UpdateUpgrades(timePassed)
+
+    if SNTL_LimitCallFrequency(MarineTeam.UpdateUpgrades, 1) then return end
+
+    local marinetechtree = GetTechTree(kTeam1Index)
+
+    local UnlockOrder = {
+        {kTechId.Weapons1, kTechId.GrenadeTech, kTechId.MinesTech},
+        {kTechId.Armor1, kTechId.ShotgunTech},
+        {kTechId.Weapons2, kTechId.AdvancedArmoryUpgrade},
+        {kTechId.HeavyMachineGunTech},
+        {kTechId.Armor2, kTechId.JetpackTech},
+        {kTechId.Weapons3, kTechId.ExosuitTech},
+        {kTechId.Armor3}
+    }
+
+    local marines = GetEntitiesForTeam("Player", kMarineTeamType)
+    local marine = #marines > 0 and marines[1]
+
+    if not marine then
+        return
+    end
+
+    local upgradeResearching = false
+    for _, ups in ipairs(UnlockOrder) do
+        for _, up in ipairs(ups) do
+
+            local node = marinetechtree:GetTechNode(up)
+            if node then
+                -- Log("[sntl] GetCanResearch(): %s", node:GetCanResearch())
+
+                if up == kTechId.AdvancedArmoryUpgrade then
+                    upgradeResearching = true
+                    for _, a in ipairs(GetEntitiesForTeam("Armory", kMarineTeamType)) do
+                        if a:GetTechId() == kTechId.AdvancedArmory then
+                            upgradeResearching = false
+                            break
+                        end
+                    end
+                elseif not node:GetResearched() then
+                    upgradeResearching = true
+                end
+
+                if upgradeResearching and not node:GetResearching() and not node:GetHasTech()
+                then -- Unlock if not already on
+
+                    local ents = {"ArmsLab", "Armory", "PrototypeLab"}
+
+                    for _, entName in ipairs(ents) do
+                        local alreadyResearching = false
+
+                        for _, ent in ipairs(GetEntitiesForTeam(entName, kMarineTeamType)) do
+                            if ent:GetIsResearching() and ent:GetResearchingId() == up then
+                                alreadyResearching = true
+                                break
+                            end
+                        end
+
+                        if alreadyResearching then
+                            break
+                        end
+
+                        for _, ent in ipairs(GetEntitiesForTeam(entName, kMarineTeamType)) do
+                            local techAllowed = false
+
+                            if ent.GetTechButtons then
+                                for _, tech in ipairs(ent:GetTechButtons()) do
+                                    if tech == up then
+                                        techAllowed = true
+                                        break
+                                    end
+                                end
+                            end
+
+                            if techAllowed and ent:GetCanResearch() and not ent:GetIsResearching() then
+                                Log("[sntl] Researching %s", EnumToString(kTechId, up))
+                                ent:SetResearching(node, marine)
+                                ent.researchProgress = 0.01 -- Hack so the GetIsResearching() will return true
+                                break
+                            end
+
+                        end
+                    end
+
+                end
+
+            end
+        end
+        if upgradeResearching then
+            break
+        end
+    end
+
+
+    -- local unlockedWeapons = {
+    --     -- kTechId.GrenadeTech
+    -- }
+
+    -- for _, up in ipairs(unlockedWeapons) do
+    --     if (up and marinetechtree:GetTechNode(up) and not marinetechtree:GetTechNode(up):GetResearched())
+    --     then -- Unlock if not already on
+    --         local AA = GetEntitiesForTeam("AdvancedArmory", kMarineTeamType)
+    --         if (#AA > 0) then
+    --             marinetechtree:GetTechNode(up):SetResearched(true)
+    --             marinetechtree:QueueOnResearchComplete(up, AA[1])
+    --         end
+    --     end
+    -- end
+
+
+end
+
+
+local function GetArmorLevel(self)
+
+    local armorLevels = 0
+
+    local techTree = self:GetTechTree()
+    if techTree then
+
+        if techTree:GetHasTech(kTechId.Armor3) then
+            armorLevels = 3
+        elseif techTree:GetHasTech(kTechId.Armor2) then
+            armorLevels = 2
+        elseif techTree:GetHasTech(kTechId.Armor1) then
+            armorLevels = 1
+        end
+
+    end
+
+    return armorLevels
+
+end
+
+
+local function SNTL_MarineTeam_Update(self, timePassed)
+    if GetGamerules():GetGameStarted() then
+        self:randomBonusDrop()
+        self:UpdateUpgrades(timePassed)
+    end
+end
+
+function MarineTeam:Update(timePassed)
+
+    PROFILE("MarineTeam:Update")
+
+    PlayingTeam.Update(self, timePassed)
+
+    -- Update distress beacon mask
+    self:UpdateGameMasks(timePassed)
+
+    -- if GetGamerules():GetGameStarted() then
+    --     CheckForNoIPs(self)
+    -- end
+
+    local armorLevel = GetArmorLevel(self)
+    for index, player in ipairs(GetEntitiesForTeam("Player", self:GetTeamNumber())) do
+        player:UpdateArmorAmount(armorLevel)
+    end
+
+    SNTL_MarineTeam_Update(self, timePassed)
+
+end
 
 -- -- Disable the "We need an Infantry portal" voice warning
 -- ReplaceUpValue(MarineTeam.Update, "CheckForNoIPs",
