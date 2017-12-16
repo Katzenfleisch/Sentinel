@@ -27,12 +27,13 @@ function MarineTeam:OnResetComplete()
 end
 
 function MarineTeam:SpawnInitialStructures(techPoint)
-    local weapons = {Shotgun.kMapName, Shotgun.kMapName, Shotgun.kMapName,
-                     GrenadeLauncher.kMapName,
-                     Flamethrower.kMapName,
-                     HeavyMachineGun.kMapName,
-                     LayMines.kMapName, LayMines.kMapName, LayMines.kMapName,
-                     LayMines.kMapName, LayMines.kMapName, LayMines.kMapName
+    local weapons = {
+        -- Shotgun.kMapName, Shotgun.kMapName, Shotgun.kMapName,
+        -- GrenadeLauncher.kMapName,
+        -- Flamethrower.kMapName,
+        -- HeavyMachineGun.kMapName,
+        LayMines.kMapName, LayMines.kMapName, LayMines.kMapName,
+        LayMines.kMapName, LayMines.kMapName, LayMines.kMapName
     }
 
     if not GetGameInfoEntity():GetIsDedicated() then
