@@ -51,13 +51,19 @@ function MarineTeam:SpawnInitialStructures(techPoint)
     local pg = pg_origin and CreateEntity(PhaseGate.kMapName, pg_origin[1], kMarineTeamType)
     if pg then pg:SetConstructionComplete() ; SetRandomAngle(pg) end
 
-    local armslab_origin = SNTL_SpreadedPlacementFromOrigin(GetExtents(kTechId.ArmsLab), origin, 1, 2, 5)
-    local armslab = armslab_origin and CreateEntity(ArmsLab.kMapName, armslab_origin[1], kMarineTeamType)
-    if armslab then armslab:SetConstructionComplete() ; SetRandomAngle(armslab) end
+    for i = 1, 2 do
+        local armslab_origin = SNTL_SpreadedPlacementFromOrigin(GetExtents(kTechId.ArmsLab), origin, 1, 2, 5)
+        local armslab = armslab_origin and CreateEntity(ArmsLab.kMapName, armslab_origin[1], kMarineTeamType)
+        if armslab then armslab:SetConstructionComplete() ; SetRandomAngle(armslab) end
+    end
 
-    local armory_origin = SNTL_SpreadedPlacementFromOrigin(GetExtents(kTechId.AdvancedArmory), origin, 1, 2, 5)
-    local armory = armory_origin and CreateEntity(AdvancedArmory.kMapName, armory_origin[1], kMarineTeamType)
+    local armory_origin = SNTL_SpreadedPlacementFromOrigin(GetExtents(kTechId.Armory), origin, 1, 2, 5)
+    local armory = armory_origin and CreateEntity(Armory.kMapName, armory_origin[1], kMarineTeamType)
     if armory then armory:SetConstructionComplete() ; SetRandomAngle(armory) end
+
+    local proto_origin = SNTL_SpreadedPlacementFromOrigin(GetExtents(kTechId.PrototypeLab), origin, 1, 2, 5)
+    local proto = proto_origin and CreateEntity(PrototypeLab.kMapName, proto_origin[1], kMarineTeamType)
+    if proto then proto:SetConstructionComplete() ; SetRandomAngle(proto) end
 
     -- Spawn a few weapons as well
     local weapons_origins = SNTL_SpreadedPlacementFromOrigin(GetExtents(kTechId.Shotgun), origin, 1, 2, 5)
