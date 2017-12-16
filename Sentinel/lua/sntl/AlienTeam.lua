@@ -6,6 +6,25 @@ local networkVars =
         sntl_noMoreEggs = "boolean"
 }
 
+function AlienTeam:GetBioMassLevel()
+    if GetGameInfoEntity():GetWarmUpActive() then return 9 end
+
+    local desiredEggFraction = GetGameInfoEntity():GetNumEggs() / GetGameInfoEntity():GetNumMaxEggs()
+
+    return (1 - desiredEggFraction) * 9
+    -- return self.bioMassLevel
+end
+
+function AlienTeam:GetBioMassFraction()
+    if GetGameInfoEntity():GetWarmUpActive() then return 9 end
+
+    local desiredEggFraction = GetGameInfoEntity():GetNumEggs() / GetGameInfoEntity():GetNumMaxEggs()
+
+    return (1 - desiredEggFraction) * 9
+    -- return self.bioMassFraction
+end
+
+
 local function GetSpawnLocationCandidates(maxCount)
     local count = 0
     local candidates = {}
