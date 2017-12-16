@@ -121,13 +121,22 @@ function AlienTeam:OnResetComplete(teamName, teamNumber)
     self.sntl_noMoreEggs = false
 end
 
-function AlienTeam:UpdateRandomEggSpawn(timePassed)
+function AlienTeam:UpdateHiddenEggSpawn(timePassed)
 
-    if SNTL_LimitCallFrequency(AlienTeam.UpdateRandomEggSpawn, 5) then return end
+    if SNTL_LimitCallFrequency(AlienTeam.UpdateHiddenEggSpawn, 4) then return end
+    if #GetEntitiesForTeam("Egg", kAlienTeamType) >= 50 then return end
 
-    SpawnRandomEggs(1, 3)
+    local st, eggs = SpawnRandomEggs(1, 1)
+
+    if st and eggs then
+        for _, egg in ipairs(eggs) do
+            egg.sntl_hidden_egg = true
+            egg:SetModel( nil )
+        end
+    end
     return
 end
+
 
 function AlienTeam:UpdateFillerBots()
 
@@ -151,7 +160,7 @@ function AlienTeam:UpdateNoMoreEggs()
     local numEggs = 0
 
     for _, egg in ipairs(GetEntitiesForTeam("Egg", kAlienTeamType)) do
-        numEggs = numEggs + (egg:GetIsAlive() and 1 or 0)
+        numEggs = numEggs + ((egg:GetIsAlive() and not egg.sntl_hidden_egg) and 1 or 0)
     end
     self.sntl_numEggs = numEggs
 
@@ -180,6 +189,7 @@ function AlienTeam:Update(timePassed)
     if GetGamerules():GetGameStarted() then
         self:UpdateNoMoreEggs()
         self:UpdateFillerBots()
+        self:UpdateHiddenEggSpawn()
     else
         GetGamerules():SetMaxBots(0, false)
     end

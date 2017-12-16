@@ -12,6 +12,7 @@ local networkVars =
 AddMixinNetworkVars(InfestationMixin, networkVars)
 
 function SNTL_SpawnEggsAroundPos(pos, numEgg)
+    local eggs = {}
     local spawnedEggs = 0
     local eggExtents = GetExtents(kTechId.Egg)
     local origins = SNTL_SpreadedPlacementFromOrigin(eggExtents, pos, numEgg, 1, 6)
@@ -28,6 +29,7 @@ function SNTL_SpawnEggsAroundPos(pos, numEgg)
             Log("[sntl] Unable to create entity (valid pos : %s, egg : %s)", validForEgg, egg)
         else
 
+            table.insert(eggs, egg)
             -- Randomize starting angles
             local angles = egg:GetAngles()
             angles.yaw = math.random() * math.pi * 2
@@ -43,18 +45,22 @@ function SNTL_SpawnEggsAroundPos(pos, numEgg)
     if spawnedEggs then
         Log("[sntl] * (%s/%s) A group of %s egg(s) were spawned in %s", i, numGroup, spawnedEggs, locationName)
     end
+
+    return eggs
 end
 
 function Egg:GetInfestationRadius()
-    return kEggInfestationRadius
+    return self.sntl_hidden_egg and 0.0001 or kEggInfestationRadius
 end
 
 function Egg:GetInfestationMaxRadius()
-    return kEggInfestationRadius
+    return self.sntl_hidden_egg and 0.0001 or kEggInfestationRadius
 end
 
+
+
 function Egg:GetInfestationGrowthRate()
-    return kEggInfestationGrowthDuration
+    return self.sntl_hidden_egg and 0.0001 or kEggInfestationGrowthDuration
 end
 
 local old_Egg_OnInitialized = Egg.OnInitialized
@@ -86,7 +92,9 @@ function Egg:SpawnPlayer(player)
         new_player:SetOrigin(position)
 
         -- Each hatched egg leads to a new egg being created
-        SNTL_SpawnEggsAroundPos(position, 1)
+        if not self.sntl_hidden_egg then
+            SNTL_SpawnEggsAroundPos(position, 1)
+        end
 
         new_player:SetHealth(new_player:GetMaxHealth() * kStartHealthScalar)
 
@@ -95,6 +103,40 @@ function Egg:SpawnPlayer(player)
     return rval, new_player
 
 end
+
+
+local function Egg_Noop(self)
+    return false
+end
+
+local old_Egg_GetIsVisible = Egg.GetIsVisible or LOSMixin.GetIsVisible
+function Egg:GetIsVisible()
+    local rval = false
+
+    if self.sntl_hidden_egg and not self.OnGetMapBlipInfo then
+        self.OnGetMapBlipInfo = Egg_Noop
+        Log("Hidden egg in %s, not showing", GetLocationForPoint(self:GetOrigin()):GetName())
+    end
+
+    if old_Egg_GetIsVisible then
+        rval = old_Egg_GetIsVisible(self)
+    end
+
+    if self.sntl_hidden_egg then
+        return false
+    end
+    return rval
+end
+
+-- local old_Egg_GetMapBlipInfo = Egg.GetMapBlipInfo or MapBlipMixin.GetMapBlipInfo
+-- function Egg:GetMapBlipInfo()
+--     if self.sntl_hidden_egg then
+--         self.OnGetMapBlipInfo = Egg_Noop
+--         Log("Hidden egg in %s, not showing", GetLocationForPoint(self:GetOrigin()):GetName())
+--         return false, 
+--     end
+--     return old_Egg_GetMapBlipInfo(self)
+-- end
 
 if Server then
     -- NOTE: Eggs entities are destroyed here yet, otherwise infestation would immediately vanish.
@@ -113,7 +155,13 @@ if Server then
 end
 
 function Egg:GetIsFree()
-    return self.queuedPlayerId == nil and self:GetIsAlive()
+    if not self.sntl_hidden_egg or
+        #GetEntitiesForTeamWithinRange("Player", kMarineTeamType, self:GetOrigin(), 40) == 0
+    then
+        return self.queuedPlayerId == nil and self:GetIsAlive() and self:GetCreationTime() + 25 < Shared.GetTime()
+    else
+        return false
+    end
 end
 
 Shared.LinkClassToMap("Egg", nil, networkVars)
