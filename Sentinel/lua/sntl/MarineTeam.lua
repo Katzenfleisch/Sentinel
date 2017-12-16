@@ -9,6 +9,23 @@ local function SetRandomAngle(ent)
     ent:UpdatePhysicsModel()
 end
 
+local old_MarineTeam_OnResetComplete = MarineTeam.OnResetComplete or Team.OnResetComplete
+function MarineTeam:OnResetComplete()
+    if old_MarineTeam_OnResetComplete then
+        old_MarineTeam_OnResetComplete(self)
+    end
+
+    for index, powerPoint in ientitylist(Shared.GetEntitiesWithClassname("PowerPoint")) do
+
+        if powerPoint:HasConsumerRequiringPower() and powerPoint:GetPowerState() == PowerPoint.kPowerState.unsocketed
+        then
+            powerPoint:SocketPowerNode()
+        end
+
+    end
+
+end
+
 function MarineTeam:SpawnInitialStructures(techPoint)
     local weapons = {Shotgun.kMapName, Shotgun.kMapName, Shotgun.kMapName,
                      GrenadeLauncher.kMapName,
