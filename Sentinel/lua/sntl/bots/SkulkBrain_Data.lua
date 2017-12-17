@@ -8,7 +8,8 @@ local kUpgrades = {
     kTechId.Adrenaline,
 
     kTechId.Vampirism,
-    kTechId.Aura,
+    kTechId.Celerity,
+    -- kTechId.Aura,
     kTechId.Celerity,
 
     kTechId.Silence,
@@ -314,6 +315,81 @@ local function AIA_WallJumpToTarget(bot, move, targetPos)
     -- bot:GetMotion():SetDesiredMoveDirection(  bot:GetMotion().desiredMoveDirection )
 end
 
+
+function AIA_Alien_engage(bot, brain, move, target)
+    local now = Shared.GetTime()
+    local player = bot:GetPlayer()
+    local eyePos = player:GetEyePos()
+    -- local target = Shared.GetEntity(bestMem.entId)
+    local marinePos = target:GetOrigin()
+    local canJumpAgain = false
+
+    local eggFraction = GetGameInfoEntity():GetNumEggs() / GetGameInfoEntity():GetNumMaxEggs()
+
+    -- Engaging that way is pretty strong, the more eggs are killed, the more skulks are allowed to use it
+    if player.kAIA_engage_perk == nil then
+        player.kAIA_engage_perk = false
+        if math.random() < 1 - eggFraction then
+            player.kAIA_engage_perk = true
+        end
+        Log("%s has engage skill ? %s (chances: %s)", player, player.kAIA_engage_perk, 1 - eggFraction)
+    end
+
+    if player.kAIA_engage_perk == false then
+        return
+    end
+
+    AIA_WallJumpToTarget(bot, move, target:GetOrigin())
+
+    player.last_engage = Shared.GetTime()
+    if true or not GetWallBetween(target:GetEyePos(), player:GetOrigin(), player) then
+        -- Occasionally jump
+        if bot.AIA_sideMoveDuration == nil then
+            bot.AIA_sideMoveDuration = 0
+        end
+
+
+        bot.timeOfEngageJump = bot.timeOfEngageJump or 0
+        canJumpAgain = now - bot.timeOfEngageJump > bot.AIA_sideMoveDuration
+        if canJumpAgain and bot:GetPlayer():GetIsOnGround() then
+            move.commands = AddMoveCommand( move.commands, Move.Jump )
+
+            if not (now - bot.timeOfEngageJump < bot.AIA_sideMoveDuration)  then
+                -- When approaching, try to jump sideways
+                bot.timeOfEngageJump = now
+                bot.jumpOffset = nil
+                bot.AIA_sideMoveDuration = 0.4 + math.random() / 1.4
+            end
+        end
+
+        if bot.timeOfEngageJump and now - bot.timeOfEngageJump < bot.AIA_sideMoveDuration then
+
+            if bot.jumpOffset == nil then
+
+                local rand_val = 1 - 2 * math.random()
+
+                if rand_val < 0 then
+                    rand_val = math.min(-0.35, rand_val)
+                else
+                    rand_val = math.max(0.35, rand_val)
+                end
+
+                local botToTarget = GetNormalizedVectorXZ(marinePos - eyePos)
+                local sideVector = botToTarget:CrossProduct(Vector(0.35, rand_val, 0))
+
+                bot.jumpOffset = botToTarget + sideVector
+                bot:GetMotion():SetDesiredViewTarget( target:GetEngagementPoint() )
+                if math.random() < 0.3 then -- Leap when jumping sideway
+                    move.commands = AddMoveCommand( move.commands, Move.SecondaryAttack )
+                end
+            end
+
+            bot:GetMotion():SetDesiredMoveDirection( bot.jumpOffset )
+        end
+    end
+
+end
+
 local function PerformAttackEntity( eyePos, bestTarget, bot, brain, move )
 
     assert( bestTarget )
@@ -324,6 +400,7 @@ local function PerformAttackEntity( eyePos, bestTarget, bot, brain, move )
     local player = bot:GetPlayer()
     local now = Shared.GetTime()
 
+    player.last_engage = Shared.GetTime()
     if player.AIA_attack_inertia_until and now < player.AIA_attack_inertia_until then
         bot:GetMotion():SetDesiredViewTarget( nil )
         bot:GetMotion():SetDesiredMoveTarget( targetPos )
@@ -355,12 +432,12 @@ local function PerformAttackEntity( eyePos, bestTarget, bot, brain, move )
         move.commands = AddMoveCommand( move.commands, Move.PrimaryAttack )
         if bestTarget:isa("Player") then
             local max_group_size = kAIA_fully_unerf_at
-            local group_size = Clamp(GetEntitiesForTeamWithinRange("Player", kMarineTeamType, 10), 0, max_group_size)
+            local group_size = Clamp(#GetEntitiesForTeamWithinRange("Player", kMarineTeamType, bestTarget:GetOrigin(), 10), 0, max_group_size)
 
             local min = kAIA_attack_inertia_min
-            local max = kAIA_attack_inertia_max * group_buff
+            local max = kAIA_attack_inertia_max
             local min_dev = kAIA_attack_acc_min_deviation
-            local max_dev = kAIA_attack_acc_max_deviation * group_buff
+            local max_dev = kAIA_attack_acc_max_deviation
             local acc_deviation = 0
 
             max     = min +     (1 - (group_size - 1) / (max_group_size - 1)) * (max     - min)
@@ -371,6 +448,11 @@ local function PerformAttackEntity( eyePos, bestTarget, bot, brain, move )
             player.AIA_attack_inertia_direction = (engagementPoint - eyePos):GetUnit()
             player.AIA_attack_inertia_until = now + min + (max - min) * math.random()
         end
+
+    else
+
+        AIA_Alien_engage(bot, brain, move, bestTarget)
+
     end
 
 end
@@ -459,25 +541,31 @@ local function AIA_PerformRetreat( eyePos, mem, bot, brain, move )
         target = Shared.GetEntity(mem.entId)
     end
 
-    if safeSpot and skulk:GetOrigin():GetDistanceTo(safeSpot) < 10 then
+    if safeSpot and skulk:GetOrigin():GetDistanceTo(safeSpot) < 10 and skulk.lastParasiteTry then
         skulk.retreatReached = Shared.GetTime()
     end
 
     if target and
-        (target:GetOrigin():GetDistanceTo(skulk:GetOrigin()) < 8 or
-             #GetEntitiesWithinRange("Egg", target:GetOrigin(), 15) > 0)
+        (target:GetOrigin():GetDistanceTo(skulk:GetOrigin()) < kAIA_retreat_dist
+             or #GetEntitiesForTeamWithinRange("Alien", kAlienTeamType, skulk:GetOrigin(), 6) >=
+             #GetEntitiesForTeamWithinRange("Player", kMarineTeamType, target:GetOrigin(), 4) + 1
+             or #GetEntitiesWithinRange("Egg", target:GetOrigin(), 15) > 0
+             or (skulk.last_engage and skulk.last_engage + 10 > Shared.GetTime()))
     then
+        -- for _, alien in ipairs(GetEntitiesForTeamWithinRange("Alien", kAlienTeamType, target:GetOrigin(), 21)) do
+        --     alien:GiveOrder(kTechId.Attack, target:GetId(), target:GetOrigin(),nil,true,true)
+        -- end
         PerformAttackEntity( eyePos, target, bot, brain, move )
         return
     end
 
-    if safeSpot and target and (not skulk.retreatReached or skulk.retreatReached + 30 < Shared.GetTime()) then
+    if safeSpot and target and (not skulk.retreatReached or skulk.retreatReached + 10 < Shared.GetTime()) then
 
         AIA_WallJumpToTarget(bot, move, safeSpot)
 
         skulk.lastParasiteTry = skulk.lastParasiteTry or 0
         -- 60% of the time, parasite the marine on retreat
-        if not target:GetIsParasited() and skulk.lastParasiteTry + 15 < Shared.GetTime() then
+        if not target:GetIsParasited() and skulk.lastParasiteTry + 5 < Shared.GetTime() then
             skulk.lastParasiteTry = Shared.GetTime()
             bot:GetPlayer():SetActiveWeapon(Parasite.kMapName, true)
             move.commands = AddMoveCommand( move.commands, Move.PrimaryAttack )
@@ -810,33 +898,33 @@ kSkulkBrainActions =
     --[[
     --Save hives under attack
      ]]
-    function(bot, brain)
-        local skulk = bot:GetPlayer()
-        local teamNumber = skulk:GetTeamNumber()
+    -- function(bot, brain)
+    --     local skulk = bot:GetPlayer()
+    --     local teamNumber = skulk:GetTeamNumber()
 
-        -- TODO: change that to check for eggs instead
-        local hiveUnderAttack
-        bot.hiveprotector = bot.hiveprotector or math.random()
-        if bot.hiveprotector > 0.5 then
-            for _, hive in ipairs(GetEntitiesForTeam("Hive", teamNumber)) do
-                if hive:GetHealthScalar() <= 0.4 then
-                    hiveUnderAttack = hive
-                    break
-                end
-            end
-        end
+    --     -- TODO: change that to check for eggs instead
+    --     local hiveUnderAttack
+    --     bot.hiveprotector = bot.hiveprotector or math.random()
+    --     if bot.hiveprotector > 0.5 then
+    --         for _, hive in ipairs(GetEntitiesForTeam("Hive", teamNumber)) do
+    --             if hive:GetHealthScalar() <= 0.4 then
+    --                 hiveUnderAttack = hive
+    --                 break
+    --             end
+    --         end
+    --     end
 
-        local weight = hiveUnderAttack and 1.1 or 0
-        local name = "hiveunderattack"
+    --     local weight = hiveUnderAttack and 1.1 or 0
+    --     local name = "hiveunderattack"
 
-        return { name = name, weight = weight,
-            perform = function(move)
-                AIA_WallJumpToTarget(bot, move, hiveUnderAttack and hiveUnderAttack:GetOrigin())
-                -- bot:GetMotion():SetDesiredMoveTarget(hiveUnderAttack and hiveUnderAttack:GetOrigin())
-                -- bot:GetMotion():SetDesiredViewTarget(nil)
-            end }
+    --     return { name = name, weight = weight,
+    --         perform = function(move)
+    --             AIA_WallJumpToTarget(bot, move, hiveUnderAttack and hiveUnderAttack:GetOrigin())
+    --             -- bot:GetMotion():SetDesiredMoveTarget(hiveUnderAttack and hiveUnderAttack:GetOrigin())
+    --             -- bot:GetMotion():SetDesiredViewTarget(nil)
+    --         end }
 
-    end,
+    -- end,
 
     ------------------------------------------
     --
@@ -951,7 +1039,7 @@ kSkulkBrainActions =
                          then
                              -- We are sneaky :)
                              if 4 < dist and dist < 35 then
-                                 if dist < 30 then
+                                 if dist < kAIA_sneak_dist then
                                      move.commands = AddMoveCommand( move.commands, Move.MovementModifier )
                                  end
                                  local isAimingAtUs = false
@@ -975,8 +1063,8 @@ kSkulkBrainActions =
                                      if nb_alien_near_us <= nb_enemy_near_target
                                      then
                                          AIA_CallForSupport(bot, target)
+                                         AIA_PerformRetreat(skulk:GetEyePos(), bestMem, bot, brain, move)
                                          if dist < 15 then
-                                             AIA_PerformRetreat(skulk:GetEyePos(), bestMem, bot, brain, move)
                                              move.commands = AddMoveCommand( move.commands, Move.MovementModifier ) -- Wait a bit
                                          end
                                          -- AIA_PerformRetreat(skulk:GetEyePos(), bestMem, bot, brain, move)
