@@ -116,14 +116,23 @@ function Egg:GetCanTakeDamage()
     return true
 end
 
+function Egg:OnGetIsRelevant(player)
+   -- Allow or not the Faded to see marines hallucination
+    if self.sntl_hidden_egg then
+        return false
+    end
+    return true
+end
+
+
 local old_Egg_GetIsVisible = Egg.GetIsVisible or LOSMixin.GetIsVisible
 function Egg:GetIsVisible()
     local rval = false
 
-    if self.sntl_hidden_egg and not self.OnGetMapBlipInfo then
-        self.OnGetMapBlipInfo = Egg_Noop
-        Log("Hidden egg in %s, not showing", GetLocationForPoint(self:GetOrigin()):GetName())
-    end
+    -- if self.sntl_hidden_egg and not self.OnGetMapBlipInfo then
+    --     self.OnGetMapBlipInfo = Egg_Noop
+    --     Log("Hidden egg in %s, not showing", GetLocationForPoint(self:GetOrigin()):GetName())
+    -- end
 
     if old_Egg_GetIsVisible then
         rval = old_Egg_GetIsVisible(self)
@@ -140,7 +149,7 @@ end
 --     if self.sntl_hidden_egg then
 --         self.OnGetMapBlipInfo = Egg_Noop
 --         Log("Hidden egg in %s, not showing", GetLocationForPoint(self:GetOrigin()):GetName())
---         return false, 
+--         return false,
 --     end
 --     return old_Egg_GetMapBlipInfo(self)
 -- end
