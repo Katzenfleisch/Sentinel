@@ -211,11 +211,10 @@ function AlienTeam:SpawnInitialStructures(techPoint)
                        Hydra.kMapName, Hydra.kMapName, Whip.kMapName,
                        Clog.kMapName, Clog.kMapName, Clog.kMapName,
                        Shell.kMapName, Shell.kMapName, Shell.kMapName,
-                       Shade.kMapName
+                       Crag.kMapName
     }
 
-    local origins = SNTL_SpreadedPlacementFromOrigin(GetExtents(kTechId.Shade), techPoint:GetOrigin(), 1, 2, 5)
-    local origins = SNTL_SpreadedPlacementFromOrigin(GetExtents(kTechId.Shade), origins[1], #buildings, 0, 3)
+    local origins = SNTL_SpreadedPlacementFromOrigin(GetExtents(kTechId.Shade), techPoint:GetOrigin(), #buildings, 1, 4)
 
     local b = CreateEntity(TunnelEntrance.kMapName, techPoint:GetOrigin(), kAlienTeamType)
     b:SetConstructionComplete()
