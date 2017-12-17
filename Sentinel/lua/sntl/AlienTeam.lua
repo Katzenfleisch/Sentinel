@@ -235,12 +235,18 @@ function AlienTeam:SpawnInitialStructures(techPoint)
     Shared.SortEntitiesByDistance(techPoint:GetOrigin(), spawnCandidates)
     for i = 1, #spawnCandidates do
         local orig = spawnCandidates[i]:GetOrigin()
-        if #GetEntitiesWithMixinForTeamWithinRange("Live", kAlienTeamType, orig, 10) == 0 then
+        local spawnPoint = nil
+        local spawnPoints = SNTL_SpreadedPlacementFromOrigin(GetExtents(kTechId.Armory), orig, 10, 1, 6)
 
-            local spawnPoint = SNTL_SpreadedPlacementFromOrigin(GetExtents(kTechId.Armory), orig, 1, 1, 5)
-            if (spawnPoint) then
-                spawnPoint = spawnPoint[1]
+        for _, sp in ipairs(spawnPoints) do
+            if sp and #GetEntitiesWithMixinForTeamWithinRange("Live", kAlienTeamType, sp, 10) == 0
+            then
+                spawnPoint = sp
+                break
             end
+        end
+
+        if spawnPoint then
 
             local a = CreateEntity(Armory.kMapName, spawnPoint, kMarineTeamType)
 
