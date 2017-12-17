@@ -193,7 +193,7 @@ function MarineTeam:randomBonusDrop()
     if SNTL_LimitCallFrequency(MarineTeam.randomBonusDrop, 5) then return end
 
     local nb_drop = #GetEntities("AmmoPack")-- + #GetEntities("MedPack") + #GetEntities("CatPack")
-    if (nb_drop < 20) then
+    if (nb_drop < 10) then
         local ent = nil
         local rt = nil
 
@@ -211,7 +211,7 @@ function MarineTeam:randomBonusDrop()
             if (_rt) then
                 if (#GetEntitiesForTeamWithinRange("Armory", 1, _rt:GetOrigin(), 40) == 0) then
                     for _, dropName in ipairs({"AmmoPack", "MedPack", "CatPack"}) do
-                        if (#GetEntitiesForTeamWithinRange(dropName, 2, _rt:GetOrigin(), 3) > 1) then
+                        if (#GetEntitiesForTeamWithinRange(dropName, 2, _rt:GetOrigin(), 4) > 1) then
                             hasRtDropAlready = true
                             break
                         end
