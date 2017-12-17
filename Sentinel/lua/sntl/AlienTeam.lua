@@ -226,8 +226,8 @@ function AlienTeam:SpawnInitialStructures(techPoint)
             if b.SetConstructionComplete then
                 b:SetConstructionComplete()
             end
-            b:SetModel(nil)
-            c:SetModel(nil)
+            -- b:SetModel(nil)
+            -- c:SetModel(nil)
             c:SetConstructionComplete()
         end
     end
