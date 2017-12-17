@@ -288,8 +288,9 @@ function AlienTeam:GetHasTeamLost()
             totalPhasedMarines = totalPhasedMarines + pg:GetPhasedMarinesCount()
         end
 
-        if (not aliensHaveActivePlayers and numEggs == 0) or self:GetHasConceded() or
-            (not marineHaveActivePlayers and totalPhasedMarines > 0)
+        -- TODO: if there are no more eggs, need at least X kill to win
+        if (not aliensHaveActivePlayers and numEggs == 0) or
+            self:GetHasConceded() or totalPhasedMarines > 0
         then
             return true
         end
