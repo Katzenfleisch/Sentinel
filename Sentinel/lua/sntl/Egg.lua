@@ -109,6 +109,13 @@ local function Egg_Noop(self)
     return false
 end
 
+function Egg:GetCanTakeDamage()
+    if self.sntl_hidden_egg then
+        return false
+    end
+    return true
+end
+
 local old_Egg_GetIsVisible = Egg.GetIsVisible or LOSMixin.GetIsVisible
 function Egg:GetIsVisible()
     local rval = false
