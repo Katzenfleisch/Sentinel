@@ -38,22 +38,22 @@ local function GetSpawnLocationCandidates(maxCount)
 
             if #marines == 0 then
                 table.insert(candidates, entity)
-            else
-                local minDistance = math.huge
+            -- else
+                -- local minDistance = math.huge
 
-                Shared.SortEntitiesByDistance(entity:GetOrigin(), marines)
-                for _, marine in ipairs(marines) do
-                    local dist = GetPathDistance(marine:GetOrigin(), entity:GetOrigin())
+                -- Shared.SortEntitiesByDistance(entity:GetOrigin(), marines)
+                -- for _, marine in ipairs(marines) do
+                --     local dist = GetPathDistance(marine:GetOrigin(), entity:GetOrigin())
 
-                    minDistance = dist < minDistance and dist or minDistance
-                    if dist < kMinDistToSpawnEgg then
-                        break -- One is close, don't bother trying the others
-                    end
-                end
+                --     minDistance = dist < minDistance and dist or minDistance
+                --     if dist < kMinDistToSpawnEgg then
+                --         break -- One is close, don't bother trying the others
+                --     end
+                -- end
 
-                if minDistance > kMinDistToSpawnEgg then
-                    table.insert(candidates, entity)
-                end
+                -- if minDistance > kMinDistToSpawnEgg then
+                --     table.insert(candidates, entity)
+                -- end
             end
 
             if #candidates >= maxCount then
