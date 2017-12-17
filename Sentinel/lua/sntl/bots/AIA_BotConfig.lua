@@ -9,14 +9,15 @@ kAIA_attack_enable = true
 kAIA_BotMotion_tick = 6
 
 -- Shared with all lifeforms
-kAIA_sneak_dist = 30
-kAIA_engage_dist = 10
-kAIA_attack_dist = 4
+-- kAIA_sneak_dist = 25
+-- kAIA_engage_dist = 10
+-- kAIA_attack_dist = 4
 
 -- Min distance to be from the threat before sneaking again (otherwise continue to retreat)
-kAIA_retreat_dist = 8
+kAIA_retreat_dist = 5
 kAIAI_needSupportRange = 6
 
+kAIA_sneak_dist = 22
 kAIA_sound_dist = 30
 
 kAIA_UseSight = true
