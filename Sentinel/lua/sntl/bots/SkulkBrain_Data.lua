@@ -378,7 +378,9 @@ function AIA_Alien_engage(bot, brain, move, target)
                 local sideVector = botToTarget:CrossProduct(Vector(0.35, rand_val, 0))
 
                 bot.jumpOffset = botToTarget + sideVector
-                bot:GetMotion():SetDesiredViewTarget( target:GetEngagementPoint() )
+                if player:GetOrigin():GetDistanceTo(target:GetOrigin()) < 3 then
+                    bot:GetMotion():SetDesiredViewTarget( target:GetEngagementPoint() )
+                end
                 if math.random() < 0.3 then -- Leap when jumping sideway
                     move.commands = AddMoveCommand( move.commands, Move.SecondaryAttack )
                 end
@@ -400,7 +402,6 @@ local function PerformAttackEntity( eyePos, bestTarget, bot, brain, move )
     local player = bot:GetPlayer()
     local now = Shared.GetTime()
 
-    player.last_engage = Shared.GetTime()
     if player.AIA_attack_inertia_until and now < player.AIA_attack_inertia_until then
         bot:GetMotion():SetDesiredViewTarget( nil )
         bot:GetMotion():SetDesiredMoveTarget( targetPos )
@@ -547,8 +548,8 @@ local function AIA_PerformRetreat( eyePos, mem, bot, brain, move )
 
     if target and
         (target:GetOrigin():GetDistanceTo(skulk:GetOrigin()) < kAIA_retreat_dist
-             or #GetEntitiesForTeamWithinRange("Alien", kAlienTeamType, skulk:GetOrigin(), 6) >=
-             #GetEntitiesForTeamWithinRange("Player", kMarineTeamType, target:GetOrigin(), 4) + 1
+             or #GetEntitiesForTeamWithinRange("Alien", kAlienTeamType, skulk:GetOrigin(), 5) >=
+             #GetEntitiesForTeamWithinRange("Player", kMarineTeamType, target:GetOrigin(), 5) + 1
              or #GetEntitiesWithinRange("Egg", target:GetOrigin(), 15) > 0
              or (skulk.last_engage and skulk.last_engage + 10 > Shared.GetTime()))
     then
@@ -713,7 +714,7 @@ local function AIA_SneakToTarget(bot, move, target)
          targetInCombat = true
       end
       if not targetInCombat then
-         local aliens = GetEntitiesForTeamWithinRange("Alien", skulk:GetTeamNumber(), targetPos, 12)
+         local aliens = GetEntitiesForTeamWithinRange("Alien", skulk:GetTeamNumber(), targetPos, 8)
          for _, ent in ipairs(aliens) do
             if ent and ent:GetIsAlive() and ent:GetIsInCombat() then
                targetInCombat = true
@@ -946,6 +947,7 @@ kSkulkBrainActions =
         local target = nil
         local weight = 0.0
 
+        bot:GetMotion():SetDesiredViewTarget( nil )
         if (not kAIA_attack_enable) then
             return {name = name, weight = 0.000, perform = function(move) return ; end}
         end
