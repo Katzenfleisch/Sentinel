@@ -249,14 +249,21 @@ function MarineTeam:UpdateUpgrades(timePassed)
     local marinetechtree = GetTechTree(kTeam1Index)
 
     local UnlockOrder = {
-        {kTechId.Weapons1, kTechId.GrenadeTech, kTechId.MinesTech},
-        {kTechId.Armor1, kTechId.ShotgunTech},
-        {kTechId.Weapons2, kTechId.AdvancedArmoryUpgrade},
-        {kTechId.HeavyMachineGunTech},
-        {kTechId.Armor2, kTechId.JetpackTech},
-        {kTechId.Weapons3, kTechId.ExosuitTech},
-        {kTechId.Armor3}
+        {kTechId.Weapons1, kTechId.ShotgunTech, kTechId.GrenadeTech,
+         kTechId.Armor1, kTechId.MinesTech,
+         kTechId.Weapons2, kTechId.AdvancedArmoryUpgrade, kTechId.AdvancedArmoryUpgrade,
+         kTechId.HeavyMachineGunTech,
+         kTechId.JetpackTech, kTechId.Armor2,
+         kTechId.Weapons3, kTechId.ExosuitTech,
+        }
     }
+
+    local totalUpgrades = 0
+    for i, ups in ipairs(UnlockOrder) do
+        for j, up in ipairs(ups) do
+            totalUpgrades = totalUpgrades + 1
+        end
+    end
 
     local marines = GetEntitiesForTeam("Player", kMarineTeamType)
     local marine = #marines > 0 and marines[1]
@@ -265,9 +272,28 @@ function MarineTeam:UpdateUpgrades(timePassed)
         return
     end
 
+    local respawnLeft = GetGameInfoEntity():GetNumMarineRespawnLeft()
+    local respawnMax = GetGameInfoEntity():GetNumMarineRespawnMax()
+    local eggFraction = respawnLeft / respawnMax
+
+    -- local eggFraction = GetGameInfoEntity():GetNumEggs() / GetGameInfoEntity():GetNumMaxEggs()
+
+    local upNum = -2
     local upgradeResearching = false
-    for _, ups in ipairs(UnlockOrder) do
-        for _, up in ipairs(ups) do
+    for i, ups in ipairs(UnlockOrder) do
+
+        for j, up in ipairs(ups) do
+
+            -- Only research if marines are actually pushing aliens
+            -- X% of the tech tree is locked until the marines don't have any remaining spawn
+            -- Log("%s / %s", ((totalUpgrades / 100 * 5) + upNum) / totalUpgrades, 1 - eggFraction)
+            if respawnLeft > 0 then
+                if ((totalUpgrades / 100 * 0) + upNum) / totalUpgrades >= 1 - eggFraction then
+                    return
+                end
+            end
+
+            upNum = upNum + 1
 
             local node = marinetechtree:GetTechNode(up)
             if node then
@@ -285,7 +311,7 @@ function MarineTeam:UpdateUpgrades(timePassed)
                     upgradeResearching = true
                 end
 
-                if upgradeResearching and not node:GetResearching() and not node:GetHasTech()
+                if not node:GetResearched() and not node:GetResearching() and not node:GetHasTech()
                 then -- Unlock if not already on
 
                     local ents = {"ArmsLab", "Armory", "PrototypeLab"}
@@ -319,13 +345,13 @@ function MarineTeam:UpdateUpgrades(timePassed)
                             if techAllowed and ent:GetCanResearch() and not ent:GetIsResearching() then
                                 Log("[sntl] Researching %s", EnumToString(kTechId, up))
                                 ent:SetResearching(node, marine)
+                                -- return
                                 ent.researchProgress = 0.01 -- Hack so the GetIsResearching() will return true
                                 break
                             end
 
                         end
                     end
-
                 end
 
             end
@@ -378,7 +404,7 @@ end
 
 
 local function SNTL_MarineTeam_Update(self, timePassed)
-    if GetGamerules():GetGameStarted() then
+    if Server and GetGamerules():GetGameStarted() then
         self:randomBonusDrop()
         self:UpdateUpgrades(timePassed)
     end
