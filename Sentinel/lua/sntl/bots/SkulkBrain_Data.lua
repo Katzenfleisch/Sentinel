@@ -622,130 +622,184 @@ local function AIA_CallForSupport(bot, target)
 end
 
 local function AIA_SneakToTarget(bot, move, target)
-   local skulk = bot:GetPlayer()
-   local eyePos = skulk:GetEyePos()
-   local viewCoords = skulk:GetViewCoords()
-   local direction = viewCoords.zAxis
+    local skulk = bot:GetPlayer()
+    local eyePos = skulk:GetEyePos()
+    local viewCoords = skulk:GetViewCoords()
+    local direction = viewCoords.zAxis
+    local targetEyePos = target:GetEyePos()
 
-   local trace = nil
-   local wait = false
-   local zAxis = viewCoords.zAxis
+    -- Sneak or ambush
+    local dist = GetDistanceToTouch( eyePos, target )
+    local sighted = kAIA_UseSight and skulk:GetIsSighted() or skulk:GetIsDetected()
+    local is_in_combat = skulk.GetIsInCombat == nil or skulk:GetIsInCombat()
+    local is_cloaked = skulk:GetIsCloaked()
 
-   zAxis.y = 0 -- Look straight
+    local trace = nil
+    local wait = false
+    local zAxis = viewCoords.zAxis
 
-   local nextPos = eyePos + 4 * zAxis-- + Vector(0, 0.5, 0)
-   local targetPos = target:GetEyePos()
-   local isNextPosCovered = false
-   local is_cloaked = skulk:GetIsCloaked()
+    zAxis.y = 0 -- Look straight
 
-   bot.AIA_last_sneak = Shared.GetTime()
-   -- Log("Sneaking")
-   if (not bot.AIA_sneak_refresh or bot.AIA_sneak_refresh + 0.2 < Shared.GetTime()) then
-      -- DebugWireSphere(nextPos, 0.06,
-      --                 5,
-      --                 0, 0.8, 0, 0.15) -- r, g, b, a
-      -- DebugWireSphere(nextPos + nextPos + (targetPos - nextPos):GetUnit() * 3, 0.06,
-      --                 5,
-      --                 0, 0.8, 0, 0.15) -- r, g, b, a
-      -- DebugWireSphere(nextPos + nextPos + (targetPos - nextPos):GetUnit() * 5, 0.06,
-      --                 5,
-      --                 0, 0.8, 0, 0.15) -- r, g, b, a
+    local nextPos = eyePos + 4 * zAxis-- + Vector(0, 0.5, 0)
+    local targetPos = target:GetEyePos()
+    local isNextPosCovered = false
+    local is_cloaked = skulk:GetIsCloaked()
+    local path = bot:GetMotion():GetPath()
 
-      -- trace = Shared.TraceRay(nextPos, nextPos + targetPos,
-      --                         CollisionRep.Damage, PhysicsMask.Bullets, EntityFilterOne(skulk))
+    bot.AIA_last_sneak = Shared.GetTime()
+    if path and (not bot.AIA_sneak_refresh or bot.AIA_sneak_refresh + 0.2 < Shared.GetTime()) then
+        local idx = bot:GetMotion():GetPathIndex()
+        local pathDist = 0
+        local maxIdx = #path
 
-      bot.AIA_sneak_wait = false
-      -- If we are already out of cover, continue to move forward
-      if (AIA_IsCoverBetween(targetPos, skulk:GetOrigin(), target)) then
-         -- Log("Wall between us and target already, can we continue ?")
-         -- if (not GetWallBetween(targetPos, nextPos, target)) then
-         for i = 3, 20, 4 do
-            local nextPos = eyePos + (i * zAxis)
-            if nextPos:GetDistanceTo(targetPos) < (20 - i) then
-               if not GetWallBetween(targetPos, nextPos, target) then
-                  -- Only wait if are at the corner already
-                  if GetHasVampirismUpgrade(skulk) or (i <= 7 and AIA_IsLookingAt(target, nextPos))
-                  then
-                     if eyePos:GetDistanceTo(targetPos) > 4 then
-                        bot.AIA_sneak_wait = true
-                        if #GetEntitiesForTeamWithinRange("Alien",
-                                                          skulk:GetTeamNumber(), skulk:GetOrigin(), kAIAI_needSupportRange) == 1
-                        then
-                           AIA_CallForSupport(bot, target)
+        for i = idx, #path do
+            if i < #path then
+                pathDist = pathDist + (path[i]:GetDistanceTo(path[i + 1]))
+                if pathDist > 7 then
+                    maxIdx = i
+                    break
+                end
+            end
+        end
 
-                           local memories = GetTeamMemories(skulk:GetTeamNumber())
-                           local bestUrgency, bestMem = GetMaxTableEntry( memories,
-                                                                          function( mem )
-                                                                              return GetAttackUrgency( bot, mem )
-                                                                          end)
+        pathDist = 0
+        bot.AIA_sneak_wait = false
+        -- If we are already out of cover, continue to move forward
+        if path and idx and (AIA_IsCoverBetween(targetEyePos, eyePos, target)) then
+            for i = idx, maxIdx, 1 do
+                local nextPos = nil
 
-                           AIA_PerformRetreat(skulk:GetEyePos(), bestMem, bot, brain, move)
+                if i < #path then
+                    pathDist = pathDist + (path[i]:GetDistanceTo(path[i + 1]))
+                end
+
+                nextPos = path[i]
+                -- nextPos = eyePos + (i * zAxis)
+                if nextPos:GetDistanceTo(targetPos) < (20 - pathDist) then
+                    if not GetWallBetween(targetEyePos, nextPos, target) then
+                        if pathDist <= 4 then
+                            bot.AIA_sneak_wait = true
+                        else
+                            local dist1 = target:GetOrigin():GetDistanceTo(nextPos)
+                            local dist2 = skulk:GetOrigin():GetDistanceTo(nextPos)
+                            if dist1 < dist2
+                            then
+                                SetState(bot, kState.retreat)
+                            end
                         end
-                     end
-                  end
-                  break
-               end
+                        break
+                        -- Only wait if are at the corner already
+                        -- if GetHasVampirismUpgrade(skulk) or (i <= 7 and AIA_IsLookingAt(target, nextPos))
+                        -- then
+                        --     if eyePos:GetDistanceTo(targetPos) > 4 then
+                        --         bot.AIA_sneak_wait = true
+                        --            if #GetEntitiesForTeamWithinRange("Alien",
+                        --                                              skulk:GetTeamNumber(), skulk:GetOrigin(), kAIAI_needSupportRange) == 1
+                        --            then
+                        --                SetState(bot, kState.retreat)
+                        --               -- AIA_CallForSupport(bot, target)
+
+                        --               -- local memories = GetTeamMemories(skulk:GetTeamNumber())
+                        --               -- local bestUrgency, bestMem = GetMaxTableEntry( memories,
+                        --               --                                                function( mem )
+                        --               --                                                    return GetAttackUrgency( bot, mem )
+                        --               --                                                end)
+
+                        --               -- AIA_PerformRetreat(skulk:GetEyePos(), bestMem, bot, brain, move)
+                        --            end
+                        --     end
+                        -- end
+                        -- break
+                    end
+                end
             end
-         end
-         -- else
-         --    Log("Wall between us and target already, can we continue ? NOOO STOP")
-         -- end
-      else -- No wall
-         if GetHasVampirismUpgrade(skulk) then
-            bot.AIA_sneak_wait = true
-         end
-      end
-
-      -- Log("Waiting on the corner : " .. tostring(bot.AIA_sneak_wait))
-      -- for i = 1, 15, 5 do
-      --    DebugWireSphere(nextPos + nextPos + (targetPos - nextPos):GetUnit() * i, 0.06,
-      --                    2,
-      --                    0, 0.8, 0, 0.15) -- r, g, b, a
-      -- end
-
-      bot.AIA_sneak_refresh = Shared.GetTime()
-   end
-
-   wait = bot.AIA_sneak_wait
-
-   -- -- If we do not have silence, walk slowly not to make noise
-   -- if not GetHasSilenceUpgrade(skulk) then
-   --    move.commands = AddMoveCommand( move.commands, Move.MovementModifier )
-   -- end
-
-   -- TODO: fix vampirism ambush not working anymore
-
-   nextPos = nextPos + Vector(0, 0.5, 0)
-   if (wait == true) then
-      local targetInCombat = false
-      if target.GetIsInCombat and target:GetIsInCombat() then
-         targetInCombat = true
-      end
-      if not targetInCombat then
-         local aliens = GetEntitiesForTeamWithinRange("Alien", skulk:GetTeamNumber(), targetPos, 8)
-         for _, ent in ipairs(aliens) do
-            if ent and ent:GetIsAlive() and ent:GetIsInCombat() then
-               targetInCombat = true
-               break
+            -- else
+            --    Log("Wall between us and target already, can we continue ? NOOO STOP")
+            -- end
+        else -- No wall
+            if GetHasVampirismUpgrade(skulk) then
+                bot.AIA_sneak_wait = true
             end
-         end
-      end
+        end
 
-      -- Log("Waiting on the corner")
-      -- Don't move forward, we could be seen, wait on the corner
-      if not targetInCombat then -- if target is already attacked, don't wait, support our friend !
-         bot:GetMotion():SetDesiredMoveTarget(nil)
-      end
-      -- bot:GetMotion():SetDesiredViewTarget(nextPos)
-   else
-      -- local moveDir = AIA_GetDirToNearestWall(bot)
+        -- Log("Waiting on the corner : " .. tostring(bot.AIA_sneak_wait))
+        -- for i = 1, 15, 5 do
+        --    DebugWireSphere(nextPos + nextPos + (targetPos - nextPos):GetUnit() * i, 0.06,
+        --                    2,
+        --                    0, 0.8, 0, 0.15) -- r, g, b, a
+        -- end
 
-      -- if (moveDir) then -- Climb to ceiling
-         -- bot:GetMotion():SetDesiredMoveDirection( moveDir + Vector(0, 0.5, 0) )
-      -- end
-      -- bot:GetMotion():SetDesiredMoveDirection( (nextPos - skulk:GetOrigin()):GetUnit() )
-      bot:GetMotion():SetDesiredMoveTarget(targetPos)
-   end
+        bot.AIA_sneak_refresh = Shared.GetTime()
+    end
+
+    wait = bot.AIA_sneak_wait
+
+    -- -- If we do not have silence, walk slowly not to make noise
+    -- if not GetHasSilenceUpgrade(skulk) then
+    --    move.commands = AddMoveCommand( move.commands, Move.MovementModifier )
+    -- end
+
+    -- TODO: fix vampirism ambush not working anymore
+
+    nextPos = nextPos + Vector(0, 0.5, 0)
+    if (wait == true) then
+        -- local targetInCombat = false
+        -- if target.GetIsInCombat and target:GetIsInCombat() then
+        --     targetInCombat = true
+        -- end
+        -- if not targetInCombat then
+        --     local aliens = GetEntitiesForTeamWithinRange("Alien", skulk:GetTeamNumber(), targetPos, 8)
+        --     for _, ent in ipairs(aliens) do
+        --         if ent and ent:GetIsAlive() and ent:GetIsInCombat() then
+        --             targetInCombat = true
+        --             break
+        --         end
+        --     end
+        -- end
+
+        -- -- Log("Waiting on the corner")
+        -- -- Don't move forward, we could be seen, wait on the corner
+        -- if not targetInCombat then -- if target is already attacked, don't wait, support our friend !
+        --     bot:GetMotion():SetDesiredMoveTarget(nil)
+        -- end
+        -- bot:GetMotion():SetDesiredViewTarget(nextPos)
+
+        bot:GetMotion():SetDesiredMoveTarget(nil)
+        bot:GetMotion():SetDesiredViewTarget(nil)
+
+        local moveDir, wallOrig = AIA_GetDirToNearestWall(bot)
+
+        if (moveDir) then -- Climb to ceiling
+            -- if not skulk.kClimbWallStart or skulk.kClimbWallStart + 20 < Shared.GetTime() then
+            --     skulk.kClimbWallStart = Shared.GetTime()
+            -- end
+
+            -- if skulk.kClimbWallStart + 3 < Shared.GetTime() then
+            --     bot:GetMotion():SetDesiredMoveDirection( moveDir + Vector(0, 0.8, 0) )
+            --     bot:GetMotion():SetDesiredMoveTarget(skulk:GetOrigin() + moveDir * 3)
+            -- end
+
+            move.commands = AddMoveCommand( move.commands, Move.MovementModifier )
+            if wallOrig:GetDistanceTo(skulk:GetOrigin()) >= 0.2 then
+                bot:GetMotion():SetDesiredMoveDirection( moveDir )
+                bot:GetMotion():SetDesiredMoveTarget(wallOrig)
+            end
+
+        end
+
+    else
+
+        -- bot:GetMotion():SetDesiredMoveDirection( (nextPos - skulk:GetOrigin()):GetUnit() )
+        if not GetHasSilenceUpgrade(skulk) and dist <= kAIA_sneak_dist then
+            move.commands = AddMoveCommand( move.commands, Move.MovementModifier )
+        end
+        bot:GetMotion():SetDesiredMoveTarget(targetPos)
+
+        -- TODO: here change state if needed or retreat
+        if (is_in_combat or sighted or dist < kAIA_retreat_dist) then
+            SetState(bot, dist < kAIA_retreat_dist and kState.attack or kState.retreat)
+        end
+    end
 
 end
 
@@ -799,6 +853,7 @@ kSkulkBrainActions =
     --
     ------------------------------------------
     CreateExploreAction( 0.01, function(pos, targetPos, bot, brain, move)
+                             SetState(bot, kState.explore)
                              AIA_WallJumpToTarget(bot, move, targetPos)
                              -- bot:GetMotion():SetDesiredMoveTarget(targetPos)
                              -- bot:GetMotion():SetDesiredViewTarget(nil)
@@ -910,32 +965,32 @@ kSkulkBrainActions =
 
     end,
 
-    --[[
-    --Save hives under attack
-     ]]
+    -- --[[
+    -- -- -- Save eggs under attack
+    -- --]]
     -- function(bot, brain)
     --     local skulk = bot:GetPlayer()
     --     local teamNumber = skulk:GetTeamNumber()
 
     --     -- TODO: change that to check for eggs instead
-    --     local hiveUnderAttack
-    --     bot.hiveprotector = bot.hiveprotector or math.random()
-    --     if bot.hiveprotector > 0.5 then
-    --         for _, hive in ipairs(GetEntitiesForTeam("Hive", teamNumber)) do
-    --             if hive:GetHealthScalar() <= 0.4 then
-    --                 hiveUnderAttack = hive
+    --     local eggUnderAttack
+    --     bot.eggprotector = bot.eggprotector or math.random()
+    --     if bot.eggprotector > 0.15 then
+    --         for _, egg in ipairs(GetEntitiesForTeam("Egg", teamNumber)) do
+    --             if egg:GetHealthScalar() <= 0.95 then
+    --                 eggUnderAttack = egg
     --                 break
     --             end
     --         end
     --     end
 
-    --     local weight = hiveUnderAttack and 1.1 or 0
-    --     local name = "hiveunderattack"
+    --     local weight = eggUnderAttack and 1.1 or 0
+    --     local name = "eggunderattack"
 
     --     return { name = name, weight = weight,
     --         perform = function(move)
-    --             AIA_WallJumpToTarget(bot, move, hiveUnderAttack and hiveUnderAttack:GetOrigin())
-    --             -- bot:GetMotion():SetDesiredMoveTarget(hiveUnderAttack and hiveUnderAttack:GetOrigin())
+    --             AIA_WallJumpToTarget(bot, move, eggUnderAttack and eggUnderAttack:GetOrigin())
+    --             -- bot:GetMotion():SetDesiredMoveTarget(eggUnderAttack and eggUnderAttack:GetOrigin())
     --             -- bot:GetMotion():SetDesiredViewTarget(nil)
     --         end }
 
@@ -960,17 +1015,15 @@ kSkulkBrainActions =
 
         local target = nil
         local weight = 0.0
+        local dist = 0.0
+        local target = nil
 
         bot:GetMotion():SetDesiredViewTarget( nil )
-        if (not kAIA_attack_enable) then
-            return {name = name, weight = 0.000, perform = function(move) return ; end}
-        end
+        if bestMem ~= nil then
 
-        if canAttack and bestMem ~= nil then
-
-            local dist = 0.0
-            if Shared.GetEntity(bestMem.entId) ~= nil then
-                dist = GetDistanceToTouch( eyePos, Shared.GetEntity(bestMem.entId) )
+            target = Shared.GetEntity(bestMem.entId)
+            if target ~= nil then
+                dist = GetDistanceToTouch( eyePos, target )
             else
                 dist = eyePos:GetDistance( bestMem.lastSeenPos )
             end
@@ -987,139 +1040,62 @@ kSkulkBrainActions =
                                   { 100.0, 0.0 } })
         end
 
-        -- if weight == 0 then
-        --    target, bestMem = AIA_GetClosestPlayerMemory(bot)
-        --    if (target) then
-        --       weight = 0.
-        --       bestUrgency = 2
-        --    end
-        -- end
-
-
-        -- if (target) then
-        --    Log("Targeting playing, weight: " .. tostring(weight))
-        -- end
-
-        -- Log("Eval attack: " .. tostring(weight))
         return { name = name, weight = weight,
                  perform = function(move)
-                     local skulk = bot:GetPlayer()
-                     local sighted = kAIA_UseSight and (is_in_combat or skulk:GetIsSighted())
-                     local eyePos = skulk:GetEyePos()
+
+                     local st = skulk.kState
                      local target = Shared.GetEntity(bestMem.entId)
-                     local retreat = false
-                     local order = bot:GetPlayerOrder()
+                     local s_orig = skulk:GetOrigin()
+                     local t_orig = bestMem.lastSeenPos
 
-                     -- -- In case we meet someone on the way, stop retreating and attack again
-                     -- if retreat-- and (not bot.AIA_lastRetreatCheck or bot.AIA_lastRetreatCheck + 0.5 < Shared.GetTime())
-                     -- then
-                     --    local hasClearShot = true
-
-                     --    if (target and target:isa("Player")) then
-                     --       local dist = GetDistanceToTouch( eyePos, target )
-
-                     --       hasClearShot = dist < 25.0 and GetBotCanSeeTarget( target, skulk )
-                     --       if not hasClearShot then
-                     --          Log("Retreat canceled")
-                     --          retreat = false
-                     --          bot.AIA_retreat_until = nil
-                     --       end
-                     --    end
-
-                     --    -- local s = brain:GetSenses()
-                     --    -- local nearestThreat = s:Get("nearestThreat")
-                     --    -- local nearestThreatOrig = nil
-
-                     --    -- bot.AIA_lastRetreatCheck = Shared.GetTime()
-                     --    -- if nearestThreat and nearestThreat.memory and nearestThreat.memory.lastSeenPos
-                     --    -- then
-                     --    --    nearestThreatOrig = nearestThreat.memory.lastSeenPos
-                     --    -- end
-
-                     --    -- if nearestThreatOrig and nearestThreatOrig:GetDistanceTo(skulk:GetOrigin()) <= kAIA_retreat_dist * 1.1
-                     --    -- then
-                     --    --    bot.AIA_retreat_until = nil
-                     --    --    retreat = false
-                     --    -- end
-                     -- end
-
-                     if ((target and target:isa("Player")))
-                     then
-                         -- Sneak or ambush
-                         local dist = GetDistanceToTouch( eyePos, target )
-                         local sighted = kAIA_UseSight and skulk:GetIsSighted() or skulk:GetIsDetected()
-                         local is_in_combat = skulk.GetIsInCombat == nil or skulk:GetIsInCombat()
-                         local is_cloaked = skulk:GetIsCloaked()
-
-                         if not retreat and (is_cloaked or (not is_in_combat and not sighted))
-                         then
-                             -- We are sneaky :)
-                             if 4 < dist and dist < 35 then
-                                 if dist < kAIA_sneak_dist then
-                                     move.commands = AddMoveCommand( move.commands, Move.MovementModifier )
-                                 end
-                                 local isAimingAtUs = false
-
-                                 if (not is_cloaked) then
-                                     isAimingAtUs = IsAimingAt(target, skulk)
-                                 end
-                                 if not isAimingAtUs then
-                                     local nb_alien_near_us = #GetEntitiesForTeamWithinRange(
-                                         "Alien",
-                                         skulk:GetTeamNumber(),
-                                         skulk:GetOrigin(),
-                                         kAIAI_needSupportRange)
-                                     local nb_enemy_near_target = #GetEntitiesForTeamWithinRange(
-                                         "Player",
-                                         GetEnemyTeamNumber(skulk:GetTeamNumber()),
-                                         target:GetOrigin(),
-                                         kAIAI_needSupportRange)
-
-                                     AIA_SneakToTarget(bot, move, target)
-                                     if nb_alien_near_us <= nb_enemy_near_target
-                                     then
-                                         AIA_CallForSupport(bot, target)
-                                         AIA_PerformRetreat(skulk:GetEyePos(), bestMem, bot, brain, move)
-                                         if dist < 15 then
-                                             move.commands = AddMoveCommand( move.commands, Move.MovementModifier ) -- Wait a bit
-                                         end
-                                         -- AIA_PerformRetreat(skulk:GetEyePos(), bestMem, bot, brain, move)
-                                     end
-                                     return
-                                 end
-                             end
-                         else
-                             local hasClearShot = true
-
-                             if (target and target:isa("Player")) then
-                                 hasClearShot = not AIA_IsCoverBetween(skulk:GetOrigin(), target:GetOrigin(), target)
-                             end
-                             if retreat or (hasClearShot and dist > kAIA_retreat_dist) then -- Too far, hide
-
-                                 AIA_PerformRetreat(skulk:GetEyePos(), bestMem, bot, brain, move)
-                                 -- Log("Clearshot and too far ! find cover quick")
-                                 -- local coverSpot = AIA_FindCoverSpots(bot, target)
-
-                                 -- if (coverSpot) then
-                                 --    Log("Cover found")
-                                 --    DebugWireSphere(coverSpot, 0.06,
-                                 --                    20,
-                                 --                    0, 0.8, 0, 0.15) -- r, g, b, a
-                                 -- end
-
-                                 -- if (Server) then
-                                 --    CreateEntity("Clog"
-                                 -- end
-                                 return
-                             end
-
-                             -- We are in combat or seen, retreat or attack
-                         end
+                     -- Safety to enforce the attack no matter in which state we are
+                     if target:isa("Player") and t_orig:GetDistanceTo(s_orig) < 3 then
+                         SetState(bot, kState.attack)
                      end
-                     -- Log("Attack")
-                     bot.AIA_retreat_until = nil
-                     AIA_PerformRetreat(skulk:GetEyePos(), bestMem, bot, brain, move)
-                     -- PerformAttack( eyePos, bestMem, bot, brain, move )
+
+                     if st == kState.sneak then
+                         -- Log("%s sneaking", skulk)
+                         -- if distToTarget >= kAIA_sneak_dist then
+                         --     AIA_WallJumpToTarget(bot, move, t_orig)
+                         -- elseif distToTarget >= 1 then
+                         -- AIA_WallJumpToTarget(bot, move, bestMem.lastSeenPos)
+                         AIA_SneakToTarget(bot, move, target)
+                         -- end
+                     elseif st == kState.retreat then
+
+                         -- Log("%s retreating", skulk)
+                         -- if not bot:GetMotion().moveBackward then
+                         --     Log("%s moving backward now", skulk)
+                         -- end
+
+                         -- bot:GetMotion():ReversePath()
+                         -- local safeOrig = AIA_NearestSafeOrig(bot)
+
+                         -- AIA_WallJumpToTarget(bot, move, safeOrig)
+
+                         AIA_WallJumpToTarget(bot, move, skulk.kRetreatDest)
+                         if dist >= kAIA_sneak_dist and GetWallBetween(target:GetEyePos(), s_orig + Vector(0, 1, 0), target)
+                         then
+                             SetState(bot, kState.sneak)
+                         elseif s_orig:GetDistanceTo(skulk.kRetreatDest) <= 2 then
+                             if dist <= 20 then
+                                 SetState(bot, kState.attack)
+                             else
+                                 SetState(bot, kState.sneak)
+                             end
+                         end
+                         -- skulk:Kill()
+
+                     elseif st == kState.attack then
+                         PerformAttackEntity( skulk:GetEyePos(), target, bot, brain, move )
+                         if not target or not target:GetIsAlive() then
+                             SetState(bot, kState.sneak)
+                         end
+                     else
+                         -- Log("%s Sneak state set by default", skulk)
+                         SetState(bot, kState.sneak)
+                     end
+
                  end }
     end,
 
@@ -1166,116 +1142,116 @@ kSkulkBrainActions =
     --         end }
     -- end,
 
-    ------------------------------------------
-    --
-    ------------------------------------------
-    function(bot, brain)
-        local name = "pheromone"
+    -- ------------------------------------------
+    -- --
+    -- ------------------------------------------
+    -- function(bot, brain)
+    --     local name = "pheromone"
 
-        local skulk = bot:GetPlayer()
-        local eyePos = skulk:GetEyePos()
+    --     local skulk = bot:GetPlayer()
+    --     local eyePos = skulk:GetEyePos()
 
-        local pheromones = EntityListToTable(Shared.GetEntitiesWithClassname("Pheromone"))
-        local bestPheromoneLocation = nil
-        local bestValue = 0
+    --     local pheromones = EntityListToTable(Shared.GetEntitiesWithClassname("Pheromone"))
+    --     local bestPheromoneLocation = nil
+    --     local bestValue = 0
 
-        for p = 1, #pheromones do
+    --     for p = 1, #pheromones do
 
-            local currentPheromone = pheromones[p]
-            if currentPheromone then
-                local techId = currentPheromone:GetType()
+    --         local currentPheromone = pheromones[p]
+    --         if currentPheromone then
+    --             local techId = currentPheromone:GetType()
 
-                if techId == kTechId.ExpandingMarker or techId == kTechId.ThreatMarker then
+    --             if techId == kTechId.ExpandingMarker or techId == kTechId.ThreatMarker then
 
-                    local location = currentPheromone:GetOrigin()
-                    local locationOnMesh = Pathing.GetClosestPoint(location)
-                    local distanceFromMesh = location:GetDistance(locationOnMesh)
+    --                 local location = currentPheromone:GetOrigin()
+    --                 local locationOnMesh = Pathing.GetClosestPoint(location)
+    --                 local distanceFromMesh = location:GetDistance(locationOnMesh)
 
-                    if distanceFromMesh > 0.001 and distanceFromMesh < 2 then
+    --                 if distanceFromMesh > 0.001 and distanceFromMesh < 2 then
 
-                        local distance = eyePos:GetDistance(location)
+    --                     local distance = eyePos:GetDistance(location)
 
-                        if currentPheromone.visitedBy == nil then
-                            currentPheromone.visitedBy = {}
-                        end
+    --                     if currentPheromone.visitedBy == nil then
+    --                         currentPheromone.visitedBy = {}
+    --                     end
 
-                        if not currentPheromone.visitedBy[bot] then
+    --                     if not currentPheromone.visitedBy[bot] then
 
-                            if distance < 5 then
-                                currentPheromone.visitedBy[bot] = true
-                            else
+    --                         if distance < 5 then
+    --                             currentPheromone.visitedBy[bot] = true
+    --                         else
 
-                                -- Value goes from 5 to 10
-                                local value = 5.0 + 5.0 / math.max(distance, 1.0) - #(currentPheromone.visitedBy)
+    --                             -- Value goes from 5 to 10
+    --                             local value = 5.0 + 5.0 / math.max(distance, 1.0) - #(currentPheromone.visitedBy)
 
-                                if value > bestValue then
-                                    bestPheromoneLocation = locationOnMesh
-                                    bestValue = value
-                                end
+    --                             if value > bestValue then
+    --                                 bestPheromoneLocation = locationOnMesh
+    --                                 bestValue = value
+    --                             end
 
-                            end
+    --                         end
 
-                        end
+    --                     end
 
-                    end
+    --                 end
 
-                end
+    --             end
 
-            end
+    --         end
 
-        end
+    --     end
 
-        local weight = EvalLPF( bestValue, {
-            { 0.0, 0.0 },
-            { 10.0, 1.0 }
-            })
+    --     local weight = EvalLPF( bestValue, {
+    --         { 0.0, 0.0 },
+    --         { 10.0, 1.0 }
+    --         })
 
-        return { name = name, weight = weight,
-            perform = function(move)
-                AIA_WallJumpToTarget(bot, move, bestPheromoneLocation)
-                -- bot:GetMotion():SetDesiredMoveTarget(bestPheromoneLocation)
-                -- bot:GetMotion():SetDesiredViewTarget(nil)
-            end }
-    end,
+    --     return { name = name, weight = weight,
+    --         perform = function(move)
+    --             AIA_WallJumpToTarget(bot, move, bestPheromoneLocation)
+    --             -- bot:GetMotion():SetDesiredMoveTarget(bestPheromoneLocation)
+    --             -- bot:GetMotion():SetDesiredViewTarget(nil)
+    --         end }
+    -- end,
 
-    ------------------------------------------
-    --
-    ------------------------------------------
-    function(bot, brain)
-        local name = "order"
+    -- ------------------------------------------
+    -- --
+    -- ------------------------------------------
+    -- function(bot, brain)
+    --     local name = "order"
 
-        local skulk = bot:GetPlayer()
-        local order = bot:GetPlayerOrder()
+    --     local skulk = bot:GetPlayer()
+    --     local order = bot:GetPlayerOrder()
 
-        local weight = 0.0
-        if order ~= nil then
-            weight = 10.0
-        end
+    --     local weight = 0.0
+    --     if order ~= nil then
+    --         weight = 10.0
+    --     end
 
-        return { name = name, weight = weight,
-            perform = function(move)
-                if order then
+    --     return { name = name, weight = weight,
+    --         perform = function(move)
+    --             if order then
 
-                    local target = Shared.GetEntity(order:GetParam())
+    --                 local target = Shared.GetEntity(order:GetParam())
 
-                    if target ~= nil and order:GetType() == kTechId.Attack then
+    --                 if target ~= nil and order:GetType() == kTechId.Attack then
 
-                        PerformAttackEntity( skulk:GetEyePos(), target, bot, brain, move )
+    --                     PerformAttackEntity( skulk:GetEyePos(), target, bot, brain, move )
 
-                    else
+    --                 else
 
-                        if brain.debug then
-                            DebugPrint("unknown order type: %s", ToString(order:GetType()) )
-                        end
+    --                     if brain.debug then
+    --                         DebugPrint("unknown order type: %s", ToString(order:GetType()) )
+    --                     end
 
-                        AIA_WallJumpToTarget(bot, move, order:GetLocation())
-                        -- bot:GetMotion():SetDesiredMoveTarget( order:GetLocation() )
-                        -- bot:GetMotion():SetDesiredViewTarget( nil )
+    --                     AIA_WallJumpToTarget(bot, move, order:GetLocation())
+    --                     -- bot:GetMotion():SetDesiredMoveTarget( order:GetLocation() )
+    --                     -- bot:GetMotion():SetDesiredViewTarget( nil )
 
-                    end
-                end
-            end }
-    end,
+    --                 end
+    --             end
+    --         end }
+    -- end,
 
 }
 
