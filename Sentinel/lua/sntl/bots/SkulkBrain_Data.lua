@@ -548,7 +548,9 @@ local function AIA_PerformRetreat( eyePos, mem, bot, brain, move )
         target = Shared.GetEntity(mem.entId)
     end
 
-    if safeSpot and skulk:GetOrigin():GetDistanceTo(safeSpot) < 10 and skulk.lastParasiteTry then
+    if safeSpot and skulk:GetOrigin():GetDistanceTo(safeSpot) < 10 and skulk.lastParasiteTry
+        or #GetEntitiesForTeamWithinRange("Player", kMarineTeamType, skulk:GetOrigin(), 20)
+    then
         skulk.retreatReached = Shared.GetTime()
     end
 
