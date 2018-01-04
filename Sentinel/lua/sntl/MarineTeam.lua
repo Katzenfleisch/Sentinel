@@ -249,7 +249,7 @@ function MarineTeam:UpdateUpgrades(timePassed)
     local marinetechtree = GetTechTree(kTeam1Index)
 
     local UnlockOrder = {
-        {kTechId.Weapons1, kTechId.ShotgunTech, kTechId.GrenadeTech,
+        {kTechId.Weapons1, kTechId.GrenadeTech, kTechId.ShotgunTech,
          kTechId.Armor1, kTechId.MinesTech,
          kTechId.Weapons2, kTechId.AdvancedArmoryUpgrade, kTechId.AdvancedArmoryUpgrade,
          kTechId.HeavyMachineGunTech,
