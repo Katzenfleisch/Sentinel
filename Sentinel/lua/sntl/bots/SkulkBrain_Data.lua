@@ -2,19 +2,36 @@
 Script.Load("lua/bots/CommonActions.lua")
 Script.Load("lua/bots/BrainSenses.lua")
 
+
 local kUpgrades = {
-    kTechId.Crush,
-    kTechId.Regeneration,
-    kTechId.Adrenaline,
-
-    kTechId.Vampirism,
-    kTechId.Celerity,
-    -- kTechId.Aura,
-    kTechId.Celerity,
-
-    kTechId.Silence,
-    kTechId.Focus,
-    kTechId.Carapace,
+    {
+        progress = 0.0, upgrades = {
+            kTechId.Regeneration,   kTechId.Crush,          kTechId.Crush,
+            kTechId.Aura,           kTechId.Aura,           kTechId.Aura,
+            kTechId.Adrenaline,     kTechId.Adrenaline,     kTechId.Adrenaline
+        }
+    },
+    {
+        progress = 0.3,     upgrades = {
+            kTechId.Carapace,       kTechId.Carapace,       kTechId.Carapace,
+            kTechId.Focus,          kTechId.Aura,           kTechId.Aura,
+            kTechId.Adrenaline,     kTechId.Adrenaline,     kTechId.Adrenaline
+        }
+    },
+    {
+        progress = 0.5,     upgrades = {
+            kTechId.Regeneration,   kTechId.Regeneration,   kTechId.Regeneration,
+            kTechId.Vampirism,      kTechId.Vampirism,      kTechId.Vampirism,
+            kTechId.Silence,        kTechId.Celerity,       kTechId.Celerity
+        }
+    },
+    {
+        progress = 0.7,     upgrades = {
+            kTechId.Carapace,       kTechId.Regeneration,   kTechId.Regeneration,
+            kTechId.Focus,          kTechId.Focus,          kTechId.Vampirism,
+            kTechId.Silence,        kTechId.Celerity,       kTechId.Celerity
+        }
+    }
 }
 
 local kEvolutions = {
@@ -847,11 +864,17 @@ kSkulkBrainActions =
                     table.insert(avaibleUpgrades, bot.lifeformEvolution)
                 end
 
-                for i = 0, 2 do
-                    if (1 - desiredEggFraction) > 0.1 + (0.40 * i) then
-                        table.insert(avaibleUpgrades, kUpgrades[math.random(1,3) + i * 3])
+                local ups = nil
+
+                for _, u in ipairs(kUpgrades)
+                do
+                    if u.progress <= (1 - desiredEggFraction) then
+                        ups = u.upgrades
+                        break
                     end
                 end
+
+                table.insert(avaibleUpgrades, ups[math.random(1,3)])
 
                 player.lifeformUpgrades = avaibleUpgrades
             end
