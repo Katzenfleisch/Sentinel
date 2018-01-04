@@ -4,6 +4,9 @@
 local old_LOSMixin_GetIsSighted = LOSMixin.GetIsSighted
 function LOSMixin:GetIsSighted()
 
+    if not kAIA_UseSight then
+        return true
+    end
     -- if not GetGameInfoEntity():GetIsDedicated() then
     --     return true
     -- end
