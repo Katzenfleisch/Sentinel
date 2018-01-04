@@ -289,7 +289,7 @@ local function AIA_WallJumpToTarget(bot, move, targetPos)
     local viewCoords = skulk:GetViewCoords()
     -- AIA: Number of walljump allowed before forcing the skulk to hit the ground.
     --      Prevents the skulks from getting stuck in ceilings
-    local maxWallJump = 4
+    local maxWallJump = 2
 
     -- Make another trace to see where to walljump to
     local moveDir = bot:GetMotion().currMoveDir
