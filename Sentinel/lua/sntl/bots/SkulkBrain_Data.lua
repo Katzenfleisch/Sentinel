@@ -400,18 +400,18 @@ function AIA_Alien_engage(bot, brain, move, target)
 
     local eggFraction = GetGameInfoEntity():GetNumEggs() / GetGameInfoEntity():GetNumMaxEggs()
 
-    -- Engaging that way is pretty strong, the more eggs are killed, the more skulks are allowed to use it
-    if player.kAIA_engage_perk == nil then
-        player.kAIA_engage_perk = false
-        if math.random() < 1 - eggFraction then
-            player.kAIA_engage_perk = true
-        end
-        Log("%s has engage skill ? %s (chances: %s)", player, player.kAIA_engage_perk, 1 - eggFraction)
-    end
+    -- -- Engaging that way is pretty strong, the more eggs are killed, the more skulks are allowed to use it
+    -- if player.kAIA_engage_perk == nil then
+    --     player.kAIA_engage_perk = false
+    --     if math.random() < 1 - eggFraction then
+    --         player.kAIA_engage_perk = true
+    --     end
+    --     Log("%s has engage skill ? %s (chances: %s)", player, player.kAIA_engage_perk, 1 - eggFraction)
+    -- end
 
-    if player.kAIA_engage_perk == false then
-        return
-    end
+    -- if player.kAIA_engage_perk == false then
+    --     return
+    -- end
 
     AIA_WallJumpToTarget(bot, move, target:GetOrigin())
 
@@ -449,7 +449,7 @@ function AIA_Alien_engage(bot, brain, move, target)
                 end
 
                 local botToTarget = GetNormalizedVectorXZ(marinePos - eyePos)
-                local sideVector = botToTarget:CrossProduct(Vector(0.35, rand_val, 0))
+                local sideVector = botToTarget:CrossProduct(Vector(0.15, rand_val, 0))
 
                 bot.jumpOffset = botToTarget + sideVector
                 if player:GetOrigin():GetDistanceTo(target:GetOrigin()) < 3 then
