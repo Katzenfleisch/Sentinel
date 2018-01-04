@@ -249,14 +249,14 @@ local function GetAttackUrgency(bot, mem)
         return 1 + 1 / math.max(distance, 1)
     end
 
-    -- No immediate threat - load balance!
-    local numOthers = bot.brain.teamBrain:GetNumAssignedTo( mem,
-            function(otherId)
-                if otherId ~= bot:GetPlayer():GetId() then
-                    return true
-                end
-                return false
-            end)
+    -- -- No immediate threat - load balance!
+    -- local numOthers = bot.brain.teamBrain:GetNumAssignedTo( mem,
+    --         function(otherId)
+    --             if otherId ~= bot:GetPlayer():GetId() then
+    --                 return true
+    --             end
+    --             return false
+    --         end)
 
     -- --Other urgencies do not rank anything here higher than 1!
     -- local urgencies = {
