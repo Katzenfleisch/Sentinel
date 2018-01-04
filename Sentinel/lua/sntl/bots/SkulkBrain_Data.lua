@@ -40,6 +40,63 @@ local kEvolutions = {
     kTechId.Onos
 }
 
+
+-- local function AIA_NearestSafeOrig(bot);
+-- local function AIA_IsCoverBetween(alienOrig, targetOrig, filteredEnt);
+-- local function AIA_GetDirToNearestWall(bot);
+-- local function GetAttackUrgency(bot, mem);
+-- local function AIA_WallJumpToTarget(bot, move, targetPos);
+-- function AIA_Alien_engage(bot, brain, move, target);
+-- local function PerformAttackEntity( eyePos, bestTarget, bot, brain, move );
+-- local function AIA_PerformRetreat( eyePos, mem, bot, brain, move );
+-- function AIA_IsLookingAt(attacker, targetPos);
+-- local function AIA_CallForSupport(bot, target);
+-- local function AIA_SneakToTarget(bot, move, target);
+-- local function PerformAttack( eyePos, mem, bot, brain, move );
+
+local kState = enum({'explore', 'sneak', 'attack', 'retreat'})
+local kStateStr   = {'explore', 'sneak', 'attack', 'retreat'}
+
+local function SetState(bot, st)
+
+    local skulk = bot:GetPlayer()
+    if not skulk.kSpawnOrigin then
+        skulk.kSpawnOrigin = skulk:GetOrigin()
+    end
+
+    if skulk.kState ~= st then
+
+        if st == kState.retreat then
+            skulk.kRetreatDest = skulk.kSpawnOrigin
+            -- local dist = 0
+            -- local idx = bot:GetMotion():GetPathIndex()
+
+            -- skulk.kRetreatDest = bot:GetMotion():GetPath()[1]
+            -- for i = idx - 1, 1, -1 do
+            --     local p1 = bot:GetMotion():GetPath()[i]
+            --     local p2 = bot:GetMotion():GetPath()[i + 1]
+            --     dist = dist + p1:GetDistanceTo(p2)
+
+            --     if dist >= kAIA_sneak_dist then
+            --         skulk.kRetreatDest = p1
+            --         break
+            --     end
+            -- end
+        end
+
+        Log("%s setting state to %s", skulk, kStateStr[st])
+        skulk.kState = st
+        skulk.kStateChanged = Shared.GetTime()
+
+        -- for _, s in ipairs(GetEntitiesWithinRange("Skulk", skulk:GetOrigin(), 6))
+        -- do
+        --     s.kState = st
+        --     s.kStateChanged = skulk.kStateChanged
+        --     s.kRetreatDest = skulk.kRetreatDest
+        -- end
+    end
+end
+
 local function AIA_NearestSafeOrig(bot)
    local alien = bot:GetPlayer()
    local memories = GetTeamMemories(alien:GetTeamNumber())
