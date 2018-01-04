@@ -14,7 +14,7 @@ kAIA_BotMotion_tick = 6
 -- kAIA_attack_dist = 4
 
 -- Min distance to be from the threat before sneaking again (otherwise continue to retreat)
-kAIA_retreat_dist = 5
+kAIA_retreat_dist = 7
 kAIAI_needSupportRange = 6
 
 kAIA_sneak_dist = 22
@@ -25,17 +25,16 @@ kAIA_UseSight = true
 -- [0-1], chances for an alien to trigger a jump if in the combat state
 kAIA_jump_in_combat = 0.08
 
-kAIA_nerf_reduced_for_groups = true
 kAIA_fully_unerf_at = 6
 
 -- Control how long an alien is moving forward after trying to bite, and before turning toward the target again
 -- Delay in second. (the greater the easier to dodge). This can be seen as reaction time in combat.
-kAIA_attack_inertia_min = kAIA_nerfing and 0.15 or 0
-kAIA_attack_inertia_max = kAIA_nerfing and 0.55 or 0
+kAIA_attack_inertia_min = kAIA_nerfing and 0.18 or 0
+kAIA_attack_inertia_max = kAIA_nerfing and 0.50 or 0
 
 -- Deviation of the bite from the marine (the greater, the more often an attack will miss)
-kAIA_attack_acc_min_deviation = kAIA_nerfing and 0.3 or 0
-kAIA_attack_acc_max_deviation = kAIA_nerfing and 1.1 or 0
+kAIA_attack_acc_min_deviation = kAIA_nerfing and 0.35 or 0
+kAIA_attack_acc_max_deviation = kAIA_nerfing and 1.00 or 0
 
 -- Skulk
 kAIA_wall_jump = true
