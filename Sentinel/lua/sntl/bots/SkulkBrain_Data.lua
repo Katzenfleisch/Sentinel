@@ -165,8 +165,8 @@ local function AIA_GetDirToNearestWall(bot)
     local rightWall = nil
     local moveDir = nil
 
-    local z = 4
-    local y = 6
+    local z = 1
+    local y = 3
 
     leftWall = Shared.TraceRay(eyePos, eyePos + y * viewCoords.xAxis + z * direction,
                                CollisionRep.Move, PhysicsMask.Bullets, EntityFilterOne(skulk))
@@ -190,9 +190,9 @@ local function AIA_GetDirToNearestWall(bot)
 
 
         if rightWall then
-            return ((eyePos + -4 * viewCoords.xAxis + 100 * direction) - eyePos):GetUnit()
+            return ((eyePos + -4 * viewCoords.xAxis + 100 * direction) - eyePos):GetUnit(), rightWall.endPoint
         else
-            return ((eyePos +  4 * viewCoords.xAxis + 100 * direction) - eyePos):GetUnit()
+            return ((eyePos +  4 * viewCoords.xAxis + 100 * direction) - eyePos):GetUnit(), leftWall.endPoint
         end
 
         -- local p2 = skulk:GetOrigin() + moveDir * 100
@@ -209,7 +209,7 @@ local function AIA_GetDirToNearestWall(bot)
     -- dist_between_both_end = dist_between_both_end
 
     -- return moveDir
-    return moveDir
+    return nil
 end
 
 ------------------------------------------
