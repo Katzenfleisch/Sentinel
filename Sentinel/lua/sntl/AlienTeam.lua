@@ -251,12 +251,13 @@ end
 local old_AlienTeam_SpawnInitialStructures = AlienTeam.SpawnInitialStructures
 function AlienTeam:SpawnInitialStructures(techPoint)
     local numHydras = 3
+    local numWebs = 20
     local kNumEggGroup = 4
     local kNumEggPerGroup = 6
     local _, eggs = SpawnRandomEggs(kNumEggGroup, kNumEggPerGroup, techPoint:GetOrigin())
     GetGameInfoEntity():SetNumMaxEggs(kNumEggGroup * kNumEggPerGroup)
 
-    for i = 1, numHydras do
+    for i = 1, numHydras + numWebs do
         local randEgg = eggs[math.random(1, #eggs)]
 
         for j = 1, 10 do
@@ -268,13 +269,26 @@ function AlienTeam:SpawnInitialStructures(techPoint)
                                                                                 math.random(),
                                                                                 math.random()-0.5))
                 if coords and valid then
-                    local h = CreateEntity(Hydra.kMapName, coords.origin, kAlienTeamType)
-                    if h then
-                        local angles = Angles()
+                    local h = nil
+                    if i <= numHydras then
+                        h = CreateEntity(Hydra.kMapName, coords.origin, kAlienTeamType)
+                        if h then
+                            local angles = Angles()
 
-                        h:SetConstructionComplete()
-                        angles:BuildFromCoords(coords)
-                        h:SetAngles(angles)
+                            h:SetConstructionComplete()
+                            angles:BuildFromCoords(coords)
+                            h:SetAngles(angles)
+                        end
+                    else
+                        if coords.origin:GetDistanceTo(hydraOrig) < kMaxWebLength then
+                            h = CreateEntity(Web.kMapName, coords.origin, kAlienTeamType)
+                            if h then
+                                h:SetEndPoint(hydraOrig)
+                            end
+                        end
+                    end
+
+                    if h then
                         break
                     end
                 end
