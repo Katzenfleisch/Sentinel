@@ -2,6 +2,7 @@
 Script.Load("lua/bots/CommonActions.lua")
 Script.Load("lua/bots/BrainSenses.lua")
 
+local kMinDistToJump = 3
 local kMinVelocityToJump = 5
 local kUpgrades = {
     {
@@ -463,6 +464,7 @@ function AIA_Alien_engage(bot, brain, move, target)
     -- local target = Shared.GetEntity(bestMem.entId)
     local marinePos = target:GetOrigin()
     local canJumpAgain = false
+    local dist = marinePos:GetDistanceTo(skulk:GetOrigin())
 
     local eggFraction = GetGameInfoEntity():GetNumEggs() / GetGameInfoEntity():GetNumMaxEggs()
 
@@ -495,7 +497,8 @@ function AIA_Alien_engage(bot, brain, move, target)
 
             if not (now - bot.timeOfEngageJump < bot.AIA_sideMoveDuration)  then
                 -- When approaching, try to jump sideways
-                if math.random() < 0.7 and skulk:GetVelocity():GetLength() >= kMinVelocityToJump then
+                if math.random() < 0.7 and skulk:GetVelocity():GetLength() >= kMinVelocityToJump and dist > kMinDistToJump
+                then
                     move.commands = AddMoveCommand( move.commands, Move.Jump )
                 end
                 bot.timeOfEngageJump = now
@@ -557,7 +560,7 @@ local function PerformAttackEntity( eyePos, bestTarget, bot, brain, move )
     if bestTarget:isa("Player") then
         -- Attacking a player
         engagementPoint = engagementPoint + Vector( math.random(), math.random(), math.random() ) * 0.5
-        if bot:GetPlayer():GetIsOnGround() and bestTarget:isa("Player") and distance > 2 then
+        if bot:GetPlayer():GetIsOnGround() and bestTarget:isa("Player") and distance > kMinDistToJump then
             if math.random() < kAIA_jump_in_combat and player:GetVelocity():GetLength() >= kMinVelocityToJump then
                 move.commands = AddMoveCommand( move.commands, Move.Jump )
             end
