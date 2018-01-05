@@ -684,13 +684,11 @@ local function AIA_SneakToTarget(bot, move, target)
         local pathDist = 0
         local maxIdx = #path
 
-        for i = idx, #path do
-            if i < #path then
-                pathDist = pathDist + (path[i]:GetDistanceTo(path[i + 1]))
-                if pathDist > 7 then
-                    maxIdx = i
-                    break
-                end
+        for i = idx, #path - 1 do
+            pathDist = pathDist + (path[i]:GetDistanceTo(path[i + 1]))
+            if pathDist > 10 then
+                maxIdx = i
+                break
             end
         end
 
