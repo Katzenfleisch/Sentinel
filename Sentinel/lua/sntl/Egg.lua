@@ -77,7 +77,7 @@ end
 local old_Egg_SpawnPlayer = Egg.SpawnPlayer
 function Egg:SpawnPlayer(player)
 
-    local kStartHealthScalar = 0.50
+    local kStartHealthScalar = 0.75
     local eggOrigin = self:GetOrigin()
     local rval, new_player = old_Egg_SpawnPlayer(self, player)
 
