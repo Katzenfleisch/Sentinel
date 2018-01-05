@@ -196,12 +196,91 @@ function AlienTeam:Update(timePassed)
     return rval
 end
 
+local function GetPositionForStructure(startPosition, direction)
+
+    local validPosition = false
+    local origin = startPosition + direction * 1000
+
+    -- Trace short distance in front
+    local trace = Shared.TraceRay(startPosition, origin, CollisionRep.Default, PhysicsMask.AllButPCsAndRagdolls)
+
+    local displayOrigin = trace.endPoint
+
+    -- If it hits something, position on this surface (must be the world or another structure)
+    if trace.fraction < 1 then
+
+        if trace.entity == nil then
+            validPosition = true
+
+        elseif trace.entity:isa("Infestation") or trace.entity:isa("Clog") then
+            validPosition = true
+        end
+
+        displayOrigin = trace.endPoint
+
+    end
+
+    -- Don't allow dropped structures to go too close to techpoints and resource nozzles
+    if GetPointBlocksAttachEntities(displayOrigin) then
+        validPosition = false
+    end
+
+    if trace.surface == "nocling" then
+        validPosition = false
+    end
+
+    -- Don t allow placing above or below us and don't draw either
+    local structureFacing = Vector(direction)
+
+    if math.abs(Math.DotProduct(trace.normal, structureFacing)) > 0.9 then
+        structureFacing = trace.normal:GetPerpendicular()
+    end
+
+    -- Coords.GetLookIn will prioritize the direction when constructing the coords,
+    -- so make sure the facing direction is perpendicular to the normal so we get
+    -- the correct y-axis.
+    local perp = Math.CrossProduct( trace.normal, structureFacing )
+    structureFacing = Math.CrossProduct( perp, trace.normal )
+
+    local coords = Coords.GetLookIn( displayOrigin, structureFacing, trace.normal )
+
+    return coords, validPosition, trace.entity
+
+end
+
 local old_AlienTeam_SpawnInitialStructures = AlienTeam.SpawnInitialStructures
 function AlienTeam:SpawnInitialStructures(techPoint)
+    local numHydras = 3
     local kNumEggGroup = 4
     local kNumEggPerGroup = 6
-    SpawnRandomEggs(kNumEggGroup, kNumEggPerGroup, techPoint:GetOrigin())
+    local _, eggs = SpawnRandomEggs(kNumEggGroup, kNumEggPerGroup, techPoint:GetOrigin())
     GetGameInfoEntity():SetNumMaxEggs(kNumEggGroup * kNumEggPerGroup)
+
+    for i = 1, numHydras do
+        local randEgg = eggs[math.random(1, #eggs)]
+
+        for j = 1, 10 do
+            local origins = SNTL_SpreadedPlacementFromOrigin(GetExtents(kTechId.Hydra), randEgg:GetOrigin(), 1, 1, 4)
+            local hydraOrig = origins and #origins > 0 and origins[1]
+
+            if hydraOrig then
+                local coords, valid = GetPositionForStructure(hydraOrig, Vector(math.random()-0.5,
+                                                                                math.random(),
+                                                                                math.random()-0.5))
+                if coords and valid then
+                    local h = CreateEntity(Hydra.kMapName, coords.origin, kAlienTeamType)
+                    if h then
+                        local angles = Angles()
+
+                        h:SetConstructionComplete()
+                        angles:BuildFromCoords(coords)
+                        h:SetAngles(angles)
+                        break
+                    end
+                end
+            end
+        end
+    end
 
     local spawnCandidates = GetSpawnLocationCandidates()
 
