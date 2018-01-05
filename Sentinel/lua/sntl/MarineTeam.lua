@@ -1,5 +1,5 @@
 
-local function SetRandomAngle(ent)
+function SetRandomAngle(ent)
     -- Randomize starting angles
     local angles = ent:GetAngles()
     angles.yaw = math.random() * math.pi * 2
@@ -47,9 +47,9 @@ function MarineTeam:SpawnInitialStructures(techPoint)
     local ip = CreateEntity(InfantryPortal.kMapName, origin, kMarineTeamType)
     if ip then ip:SetConstructionComplete() ; SetRandomAngle(ip) end
 
-    local pg_origin = SNTL_SpreadedPlacementFromOrigin(GetExtents(kTechId.PhaseGate), origin, 1, 2, 5)
-    local pg = pg_origin and CreateEntity(PhaseGate.kMapName, pg_origin[1], kMarineTeamType)
-    if pg then pg:SetConstructionComplete() ; SetRandomAngle(pg) end
+    -- local pg_origin = SNTL_SpreadedPlacementFromOrigin(GetExtents(kTechId.PhaseGate), origin, 1, 2, 5)
+    -- local pg = pg_origin and CreateEntity(PhaseGate.kMapName, pg_origin[1], kMarineTeamType)
+    -- if pg then pg:SetConstructionComplete() ; SetRandomAngle(pg) end
 
     for i = 1, 2 do
         local armslab_origin = SNTL_SpreadedPlacementFromOrigin(GetExtents(kTechId.ArmsLab), origin, 1, 2, 5)

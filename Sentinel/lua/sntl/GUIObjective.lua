@@ -130,7 +130,7 @@ function GUIObjective:Update(deltaTime)
     if GetGameInfoEntity():GetNumEggs() > 0 then
         self.objectiveTitle:SetText("Objective: 1/2 Kill all the eggs")
     else
-        self.objectiveTitle:SetText("Objective: 2/2 Retreat to the main base PG")
+        self.objectiveTitle:SetText("Objective: 2/2 Retreat to the PhaseGate")
     end
 
     if GetGameInfoEntity():GetGameStarted() then

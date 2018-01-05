@@ -351,6 +351,10 @@ function AlienTeam:SpawnInitialStructures(techPoint)
 
             local a = CreateEntity(Armory.kMapName, spawnPoint, kMarineTeamType)
 
+            local pg_origin = SNTL_SpreadedPlacementFromOrigin(GetExtents(kTechId.PhaseGate), spawnPoint, 1, 2, 5)
+            local pg = pg_origin and CreateEntity(PhaseGate.kMapName, pg_origin[1], kMarineTeamType)
+            if pg then pg:SetConstructionComplete() ; SetRandomAngle(pg) end
+
             if a then
                 -- local location = GetLocationForPoint(a:GetModelOrigin())
                 -- local powerNode = location ~= nil and GetPowerPointForLocation(location:GetName())
