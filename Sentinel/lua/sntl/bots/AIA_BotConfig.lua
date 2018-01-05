@@ -29,6 +29,9 @@ kAIA_jump_in_combat = 0.08
 
 kAIA_fully_unerf_at = 6
 
+kAIA_ability_sneak_wait = 0.60
+kAIA_ability_retreat = 0.45
+
 -- Control how long an alien is moving forward after trying to bite, and before turning toward the target again
 -- Delay in second. (the greater the easier to dodge). This can be seen as reaction time in combat.
 kAIA_attack_inertia_min = kAIA_nerfing and 0.10 or 0

@@ -65,11 +65,32 @@ local function GetRetreatDist(skulk)
     return skulk.kRetreatDist
 end
 
+local function HasSneakWaitAbility(skulk)
+    -- kAIA_ability_sneak_wait = 0.70
+    if not skulk.kSneakWaitSkulk then
+        skulk.kSneakWaitSkulk = (math.random() <= kAIA_ability_sneak_wait)
+    end
+    return skulk.kSneakWaitSkulk
+end
+
+local function HasRetreatAbility(skulk)
+    -- kAIA_ability_retreat = 0.70
+    if not skulk.kRetreatSkulk then
+        skulk.kRetreatSkulk = (math.random() <= kAIA_ability_retreat)
+    end
+    return skulk.kRetreatSkulk
+end
+
 local function SetState(bot, st)
 
     local skulk = bot:GetPlayer()
     if not skulk.kSpawnOrigin then
         skulk.kSpawnOrigin = skulk:GetOrigin()
+    end
+
+    -- If the skulk has not the retreat feature, engage
+    if st == kState.retreat and not HasRetreatAbility(skulk) then
+        st = kState.attack
     end
 
     if skulk.kState ~= st then
@@ -777,7 +798,7 @@ local function AIA_SneakToTarget(bot, move, target)
     -- TODO: fix vampirism ambush not working anymore
 
     nextPos = nextPos + Vector(0, 0.5, 0)
-    if (wait == true) then
+    if (wait == true and HasSneakWaitAbility(skulk)) then
         -- local targetInCombat = false
         -- if target.GetIsInCombat and target:GetIsInCombat() then
         --     targetInCombat = true
