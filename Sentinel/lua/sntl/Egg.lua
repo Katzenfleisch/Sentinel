@@ -1,7 +1,7 @@
 Script.Load("lua/InfestationMixin.lua")
 
-local kEggInfestDuration = 60
-local kEggInfestationRadius = 3
+local kEggInfestDuration = 50
+local kEggInfestationRadius = 4
 local kEggInfestationGrowthDuration = kEggInfestationRadius / kEggInfestDuration
 
 
