@@ -57,6 +57,13 @@ local kEvolutions = {
 local kState = enum({'explore', 'sneak', 'attack', 'retreat'})
 local kStateStr   = {'explore', 'sneak', 'attack', 'retreat'}
 
+local function GetRetreatDist(skulk)
+    if not skulk.kRetreatDist then
+        skulk.kRetreatDist = kAIA_retreat_dist + math.random() * kAIA_retreat_dist_variation
+    end
+    return skulk.kRetreatDist
+end
+
 local function SetState(bot, st)
 
     local skulk = bot:GetPlayer()
@@ -843,8 +850,8 @@ local function AIA_SneakToTarget(bot, move, target)
         bot:GetMotion():SetDesiredMoveTarget(targetPos)
 
         -- TODO: here change state if needed or retreat
-        if (is_in_combat or sighted or dist < kAIA_retreat_dist) then
-            SetState(bot, dist < kAIA_retreat_dist and kState.attack or kState.retreat)
+        if (is_in_combat or sighted or dist < GetRetreatDist(skulk)) then
+            SetState(bot, dist < GetRetreatDist(skulk) and kState.attack or kState.retreat)
         end
     end
 

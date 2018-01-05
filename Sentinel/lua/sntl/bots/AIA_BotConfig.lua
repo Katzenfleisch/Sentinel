@@ -14,7 +14,9 @@ kAIA_BotMotion_tick = 6
 -- kAIA_attack_dist = 4
 
 -- Min distance to be from the threat before sneaking again (otherwise continue to retreat)
-kAIA_retreat_dist = 7
+kAIA_retreat_dist = 6
+kAIA_retreat_dist_variation = 4 -- kAIA_retreat_dist + random() * X
+
 kAIAI_needSupportRange = 6
 
 kAIA_sneak_dist = 22
