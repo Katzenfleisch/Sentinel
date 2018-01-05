@@ -2,7 +2,7 @@
 Script.Load("lua/bots/CommonActions.lua")
 Script.Load("lua/bots/BrainSenses.lua")
 
-
+local kMinVelocityToJump = 5
 local kUpgrades = {
     {
         progress = 0.0, upgrades = {
@@ -385,7 +385,7 @@ local function AIA_WallJumpToTarget(bot, move, targetPos)
     -- if (dist > kAIA_attack_dist and kAIA_wall_jump) then
     if (canWallJump) then
         -- AIA: Skulks need to touch the ground between two walljump, present stuck in ceilings
-        if (not recentlyWallJumped) and bot.AIA_WallJumped < maxWallJump
+        if (not recentlyWallJumped) and bot.AIA_WallJumped < maxWallJump and skulk:GetVelocity():GetLength() >= kMinVelocityToJump
         then
             move.commands = AddMoveCommand( move.commands, Move.Jump )
             bot.AIA_WallJumped = bot.AIA_WallJumped + 1
@@ -397,7 +397,7 @@ local function AIA_WallJumpToTarget(bot, move, targetPos)
         if skulk:GetIsOnGround() then
             local moveDir, wallOrig = AIA_GetDirToNearestWall(bot)
 
-            move.commands = AddMoveCommand( move.commands, Move.Jump )
+            -- move.commands = AddMoveCommand( move.commands, Move.Jump )
             if (moveDir) then
                 -- if not skulk.kClimbWallStart or skulk.kClimbWallStart + 20 < Shared.GetTime() then
                 --     skulk.kClimbWallStart = Shared.GetTime()
@@ -421,12 +421,18 @@ local function AIA_WallJumpToTarget(bot, move, targetPos)
             end
         end
 
-        if skulk:GetIsOnGround() and (bot.jumpAfterWallJump > 0 or bot.timeOfJump + 5 < Shared.GetTime()) then
+        -- if not skulk.canJumpAt or skulk.canJumpAt then
+        --     skulk.canJumpAt = skulk.lastWallJumpToTargetCall and skulk.lastWallJumpToTargetCall + 1 or false
+        -- end
+        if skulk:GetIsOnGround() and (bot.jumpAfterWallJump > 0 or bot.timeOfJump + 5 < Shared.GetTime())
+            and (skulk.canJumpAt and Shared.GetTime() > skulk.canJumpAt) and skulk:GetVelocity():GetLength() >= kMinVelocityToJump
+        then
             bot.AIA_WallJumped = 0
             bot.jumpAfterWallJump = bot.jumpAfterWallJump - 1
             move.commands = AddMoveCommand( move.commands, Move.Jump )
             bot.timeOfJump = Shared.GetTime()
         end
+
     end
 
     if Shared.GetTime() < bot.timeOfJump + 0.5 then
@@ -441,13 +447,20 @@ local function AIA_WallJumpToTarget(bot, move, targetPos)
     -- move.commands = AddMoveCommand( move.commands, Move.Crouch ) -- So we do not get stuck in ceilings
 
     -- bot:GetMotion():SetDesiredMoveDirection(  bot:GetMotion().desiredMoveDirection )
+
+    -- sntl: This is to prevent skulks to jump when retreating directly, walk a bit first (faster)
+    local lastCall = skulk.lastWallJumpToTargetCall and Shared.GetTime() - skulk.lastWallJumpToTargetCall or 0
+    if not skulk.canJumpAt or lastCall > 2 then
+        skulk.canJumpAt = Shared.GetTime() + 1.5
+    end
+    skulk.lastWallJumpToTargetCall = Shared.GetTime()
 end
 
 
 function AIA_Alien_engage(bot, brain, move, target)
     local now = Shared.GetTime()
-    local player = bot:GetPlayer()
-    local eyePos = player:GetEyePos()
+    local skulk = bot:GetPlayer()
+    local eyePos = skulk:GetEyePos()
     -- local target = Shared.GetEntity(bestMem.entId)
     local marinePos = target:GetOrigin()
     local canJumpAgain = false
@@ -455,22 +468,22 @@ function AIA_Alien_engage(bot, brain, move, target)
     local eggFraction = GetGameInfoEntity():GetNumEggs() / GetGameInfoEntity():GetNumMaxEggs()
 
     -- -- Engaging that way is pretty strong, the more eggs are killed, the more skulks are allowed to use it
-    -- if player.kAIA_engage_perk == nil then
-    --     player.kAIA_engage_perk = false
+    -- if skulk.kAIA_engage_perk == nil then
+    --     skulk.kAIA_engage_perk = false
     --     if math.random() < 1 - eggFraction then
-    --         player.kAIA_engage_perk = true
+    --         skulk.kAIA_engage_perk = true
     --     end
-    --     Log("%s has engage skill ? %s (chances: %s)", player, player.kAIA_engage_perk, 1 - eggFraction)
+    --     Log("%s has engage skill ? %s (chances: %s)", skulk, skulk.kAIA_engage_perk, 1 - eggFraction)
     -- end
 
-    -- if player.kAIA_engage_perk == false then
+    -- if skulk.kAIA_engage_perk == false then
     --     return
     -- end
 
     AIA_WallJumpToTarget(bot, move, target:GetOrigin())
 
-    player.last_engage = Shared.GetTime()
-    if true or not GetWallBetween(target:GetEyePos(), player:GetOrigin(), player) then
+    skulk.last_engage = Shared.GetTime()
+    if true or not GetWallBetween(target:GetEyePos(), skulk:GetOrigin(), skulk) then
         -- Occasionally jump
         if bot.AIA_sideMoveDuration == nil then
             bot.AIA_sideMoveDuration = 0
@@ -480,10 +493,12 @@ function AIA_Alien_engage(bot, brain, move, target)
         bot.timeOfEngageJump = bot.timeOfEngageJump or 0
         canJumpAgain = now - bot.timeOfEngageJump > bot.AIA_sideMoveDuration
         if canJumpAgain and bot:GetPlayer():GetIsOnGround() then
-            move.commands = AddMoveCommand( move.commands, Move.Jump )
 
             if not (now - bot.timeOfEngageJump < bot.AIA_sideMoveDuration)  then
                 -- When approaching, try to jump sideways
+                if math.random() < 0.7 and skulk:GetVelocity():GetLength() >= kMinVelocityToJump then
+                    move.commands = AddMoveCommand( move.commands, Move.Jump )
+                end
                 bot.timeOfEngageJump = now
                 bot.jumpOffset = nil
                 bot.AIA_sideMoveDuration = 0.4 + math.random() / 1.4
@@ -506,7 +521,7 @@ function AIA_Alien_engage(bot, brain, move, target)
                 local sideVector = botToTarget:CrossProduct(Vector(0.15, rand_val, 0))
 
                 bot.jumpOffset = botToTarget + sideVector
-                if player:GetOrigin():GetDistanceTo(target:GetOrigin()) < 3 then
+                if skulk:GetOrigin():GetDistanceTo(target:GetOrigin()) < 3 then
                     bot:GetMotion():SetDesiredViewTarget( target:GetEngagementPoint() )
                 end
                 if math.random() < 0.3 then -- Leap when jumping sideway
@@ -543,8 +558,8 @@ local function PerformAttackEntity( eyePos, bestTarget, bot, brain, move )
     if bestTarget:isa("Player") then
         -- Attacking a player
         engagementPoint = engagementPoint + Vector( math.random(), math.random(), math.random() ) * 0.5
-        if bot:GetPlayer():GetIsOnGround() and bestTarget:isa("Player") and distance > 1.5 then
-            if math.random() < kAIA_jump_in_combat then
+        if bot:GetPlayer():GetIsOnGround() and bestTarget:isa("Player") and distance > 2 then
+            if math.random() < kAIA_jump_in_combat and player:GetVelocity():GetLength() >= kMinVelocityToJump then
                 move.commands = AddMoveCommand( move.commands, Move.Jump )
             end
         end
@@ -588,41 +603,10 @@ end
 
 local function AIA_PerformRetreat( eyePos, mem, bot, brain, move )
     local skulk = bot:GetPlayer()
-    local safeSpot = AIA_NearestSafeOrig(bot)
+    local safeSpot = skulk.kRetreatDest--AIA_NearestSafeOrig(bot)
     local target = Shared.GetEntity(mem.entId)
 
-    if not target then
-        local memories = GetTeamMemories(skulk:GetTeamNumber())
-        local bestUrgency, bestMem = GetMaxTableEntry( memories,
-                                                       function( mem )
-                                                           return GetAttackUrgency( bot, mem )
-                                                       end)
-
-        mem = bestMem
-        target = Shared.GetEntity(mem.entId)
-    end
-
-    if safeSpot and skulk:GetOrigin():GetDistanceTo(safeSpot) < 10 and skulk.lastParasiteTry
-        or #GetEntitiesForTeamWithinRange("Player", kMarineTeamType, skulk:GetOrigin(), 20)
-    then
-        skulk.retreatReached = Shared.GetTime()
-    end
-
-    if target and
-        (target:GetOrigin():GetDistanceTo(skulk:GetOrigin()) < kAIA_retreat_dist
-             or #GetEntitiesForTeamWithinRange("Alien", kAlienTeamType, skulk:GetOrigin(), 5) >=
-             #GetEntitiesForTeamWithinRange("Player", kMarineTeamType, target:GetOrigin(), 5) + 1
-             or #GetEntitiesWithinRange("Egg", target:GetOrigin(), 15) > 0
-             or (skulk.last_engage and skulk.last_engage + 10 > Shared.GetTime()))
-    then
-        -- for _, alien in ipairs(GetEntitiesForTeamWithinRange("Alien", kAlienTeamType, target:GetOrigin(), 21)) do
-        --     alien:GiveOrder(kTechId.Attack, target:GetId(), target:GetOrigin(),nil,true,true)
-        -- end
-        PerformAttackEntity( eyePos, target, bot, brain, move )
-        return
-    end
-
-    if safeSpot and target and (not skulk.retreatReached or skulk.retreatReached + 10 < Shared.GetTime()) then
+    if not skulk.retreatReached or skulk.retreatReached + 10 < Shared.GetTime() then
 
         AIA_WallJumpToTarget(bot, move, safeSpot)
 
@@ -636,11 +620,6 @@ local function AIA_PerformRetreat( eyePos, mem, bot, brain, move )
             bot:GetMotion():SetDesiredMoveDirection( (target:GetEngagementPoint() - eyePos):GetUnit() )
         end
 
-        -- if not bot.AIA_retreat_until or Shared.GetTime() > bot.AIA_retreat_until + 5
-        -- then
-        --    bot.AIA_retreat_until = Shared.GetTime() + kAIA_retreateDuration
-        -- end
-        return
     end
 end
 
@@ -1127,7 +1106,8 @@ kSkulkBrainActions =
 
                          -- AIA_WallJumpToTarget(bot, move, safeOrig)
 
-                         AIA_WallJumpToTarget(bot, move, skulk.kRetreatDest)
+                         -- AIA_WallJumpToTarget(bot, move, skulk.kRetreatDest)
+                         AIA_PerformRetreat(skulk:GetEyePos(), bestMem, bot, brain, move)
                          if dist >= kAIA_sneak_dist and GetWallBetween(target:GetEyePos(), s_orig + Vector(0, 1, 0), target)
                          then
                              SetState(bot, kState.sneak)
@@ -1141,7 +1121,11 @@ kSkulkBrainActions =
                          -- skulk:Kill()
 
                      elseif st == kState.attack then
-                         PerformAttackEntity( skulk:GetEyePos(), target, bot, brain, move )
+                         if dist > 3 then
+                             AIA_Alien_engage(bot, brain, move, target)
+                         else
+                             PerformAttackEntity( skulk:GetEyePos(), target, bot, brain, move )
+                         end
                          if not target or not target:GetIsAlive() then
                              SetState(bot, kState.sneak)
                          end
