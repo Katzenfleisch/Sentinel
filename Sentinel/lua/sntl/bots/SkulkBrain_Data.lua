@@ -413,11 +413,10 @@ local function AIA_WallJumpToTarget(bot, move, targetPos)
                 local currMoveDir = bot:GetMotion().currMoveDir
                 local distToWall = o1:GetDistanceTo(o2) --wallOrig:GetDistanceTo(skulk:GetOrigin())
                 if 0.3 <= distToWall and distToWall <= 4 then
-                    Log("%s Changing move dir toward wall", skulk)
                     bot:GetMotion():SetDesiredMoveDirection( currMoveDir * 1 + moveDir )
                 end
-            else
-                Log("%s Wall not found", skulk)
+            -- else
+            --     Log("%s Wall not found", skulk)
             end
         end
 
