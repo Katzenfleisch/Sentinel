@@ -712,7 +712,7 @@ local function AIA_SneakToTarget(bot, move, target)
                     if not GetWallBetween(targetEyePos, nextPos, target)
                         or not GetWallBetween(targetEyePos, nextPos + Vector(0, 1, 0), target)
                     then
-                        if pathDist <= 4.2 then
+                        if pathDist <= 4.5 then
                             bot.AIA_sneak_wait = true
                         else
                             local dist1 = target:GetOrigin():GetDistanceTo(nextPos)
