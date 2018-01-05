@@ -11,7 +11,7 @@ function AlienTeam:GetBioMassLevel()
 
     local desiredEggFraction = GetGameInfoEntity():GetNumEggs() / GetGameInfoEntity():GetNumMaxEggs()
 
-    return (1 - desiredEggFraction) * 9
+    return 3 + (1 - desiredEggFraction) * 9
     -- return self.bioMassLevel
 end
 
@@ -20,7 +20,7 @@ function AlienTeam:GetBioMassFraction()
 
     local desiredEggFraction = GetGameInfoEntity():GetNumEggs() / GetGameInfoEntity():GetNumMaxEggs()
 
-    return (1 - desiredEggFraction) * 9
+    return 3 + (1 - desiredEggFraction) * 9
     -- return self.bioMassFraction
 end
 
