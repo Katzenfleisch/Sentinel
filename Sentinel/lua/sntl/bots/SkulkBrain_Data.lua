@@ -1081,7 +1081,7 @@ kSkulkBrainActions =
                      local t_orig = bestMem.lastSeenPos
 
                      -- Safety to enforce the attack no matter in which state we are
-                     if target:isa("Player") and t_orig:GetDistanceTo(s_orig) < 3 then
+                     if target:isa("Player") and t_orig:GetDistanceTo(s_orig) < kAIA_retreat_dist then
                          SetState(bot, kState.attack)
                      end
 
