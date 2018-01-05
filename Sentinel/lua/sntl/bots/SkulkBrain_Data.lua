@@ -155,7 +155,7 @@ end
 
 
 
-local function AIA_GetDirToNearestWall(bot)
+local function AIA_GetDirToNearestWall(bot, _z, _y)
     local skulk = bot:GetPlayer()
     local eyePos = skulk:GetEyePos()
     local viewCoords = skulk:GetViewCoords()
@@ -164,21 +164,25 @@ local function AIA_GetDirToNearestWall(bot)
     local leftWall = nil
     local rightWall = nil
     local moveDir = nil
+    local endPoint = nil
 
-    local z = 1
-    local y = 3
+    local z = _z or 6
+    local y = _y or 4
 
     leftWall = Shared.TraceRay(eyePos, eyePos + y * viewCoords.xAxis + z * direction,
                                CollisionRep.Move, PhysicsMask.Bullets, EntityFilterOne(skulk))
+    rightWall = Shared.TraceRay(eyePos, eyePos + -y * viewCoords.xAxis + z * direction,
+                                CollisionRep.Move, PhysicsMask.Bullets, EntityFilterOne(skulk))
+
     if 0.2 < leftWall.fraction and leftWall.fraction < 0.9 then
         moveDir = (leftWall.endPoint - eyePos):GetUnit() --direction + viewCoords.xAxis / 4
+        endPoint = leftWall.endPoint
     end
 
-    if not moveDir then
-        rightWall = Shared.TraceRay(eyePos, eyePos + -y * viewCoords.xAxis + z * direction,
-                                    CollisionRep.Move, PhysicsMask.Bullets, EntityFilterOne(skulk))
-        if 0.2 < rightWall.fraction and rightWall.fraction < 0.9 then
+    if 0.2 < rightWall.fraction and rightWall.fraction < 0.9 then
+        if eyePos:GetDistanceTo(rightWall.endPoint) < eyePos:GetDistanceTo(leftWall.endPoint) then
             moveDir = (rightWall.endPoint - eyePos):GetUnit() --direction - viewCoords.xAxis / 4
+            endPoint = rightWall.endPoint
         end
     end
 
@@ -189,11 +193,13 @@ local function AIA_GetDirToNearestWall(bot)
         -- local p2 = p1 + perpVect * 1
 
 
-        if rightWall then
-            return ((eyePos + -4 * viewCoords.xAxis + 100 * direction) - eyePos):GetUnit(), rightWall.endPoint
-        else
-            return ((eyePos +  4 * viewCoords.xAxis + 100 * direction) - eyePos):GetUnit(), leftWall.endPoint
-        end
+        -- if rightWall then
+        --     return ((eyePos + -4 * viewCoords.xAxis + 100 * direction) - eyePos):GetUnit(), rightWall.endPoint
+        -- else
+        --     return ((eyePos +  4 * viewCoords.xAxis + 100 * direction) - eyePos):GetUnit(), leftWall.endPoint
+        -- end
+
+        return moveDir, endPoint
 
         -- local p2 = skulk:GetOrigin() + moveDir * 100
         -- local pDist = p1:GetDistanceTo(p2)
@@ -209,6 +215,19 @@ local function AIA_GetDirToNearestWall(bot)
     -- dist_between_both_end = dist_between_both_end
 
     -- return moveDir
+    -- if not _z and not _y then
+    --     return AIA_GetDirToNearestWall(bot, 4, 4)
+    -- elseif _z == 4 and _y == 4 then
+    --     return AIA_GetDirToNearestWall(bot, 2, 4)
+    -- -- elseif _z == 2 and _y == 4 then
+    -- --     return AIA_GetDirToNearestWall(bot, 0, 4)
+    -- else
+    --     return nil
+    -- end
+    if z > 1 then
+        return AIA_GetDirToNearestWall(bot, z - 0.5, y)
+    end
+
     return nil
 end
 
@@ -367,6 +386,34 @@ local function AIA_WallJumpToTarget(bot, move, targetPos)
             bot.timeOfJump = Shared.GetTime()
         end
     else
+
+        if skulk:GetIsOnGround() then
+            local moveDir, wallOrig = AIA_GetDirToNearestWall(bot)
+
+            move.commands = AddMoveCommand( move.commands, Move.Jump )
+            if (moveDir) then
+                -- if not skulk.kClimbWallStart or skulk.kClimbWallStart + 20 < Shared.GetTime() then
+                --     skulk.kClimbWallStart = Shared.GetTime()
+                -- end
+
+                -- if skulk.kClimbWallStart + 3 < Shared.GetTime() then
+                --     bot:GetMotion():SetDesiredMoveDirection( moveDir + Vector(0, 0.8, 0) )
+                --     bot:GetMotion():SetDesiredMoveTarget(skulk:GetOrigin() + moveDir * 3)
+                -- end
+
+                local o1 = Vector(wallOrig.x, 0, wallOrig.z)
+                local o2 = Vector(skulk:GetOrigin().x, 0, skulk:GetOrigin().z)
+                local currMoveDir = bot:GetMotion().currMoveDir
+                local distToWall = o1:GetDistanceTo(o2) --wallOrig:GetDistanceTo(skulk:GetOrigin())
+                if 0.3 <= distToWall and distToWall <= 4 then
+                    Log("%s Changing move dir toward wall", skulk)
+                    bot:GetMotion():SetDesiredMoveDirection( currMoveDir * 1 + moveDir )
+                end
+            else
+                Log("%s Wall not found", skulk)
+            end
+        end
+
         if skulk:GetIsOnGround() and (bot.jumpAfterWallJump > 0 or bot.timeOfJump + 5 < Shared.GetTime()) then
             bot.AIA_WallJumped = 0
             bot.jumpAfterWallJump = bot.jumpAfterWallJump - 1
