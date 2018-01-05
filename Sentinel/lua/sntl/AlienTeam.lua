@@ -252,7 +252,7 @@ local old_AlienTeam_SpawnInitialStructures = AlienTeam.SpawnInitialStructures
 function AlienTeam:SpawnInitialStructures(techPoint)
     local numHydras = 3
     local numWebs = 20
-    local babblerEggs = 7
+    local babblerEggs = 8
     local kNumEggGroup = 4
     local kNumEggPerGroup = 6
     local _, eggs = SpawnRandomEggs(kNumEggGroup, kNumEggPerGroup, techPoint:GetOrigin())
