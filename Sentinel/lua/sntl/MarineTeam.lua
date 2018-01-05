@@ -209,7 +209,9 @@ function MarineTeam:randomBonusDrop()
 
             -- Prevent drop in bases
             if (_rt) then
-                if (#GetEntitiesForTeamWithinRange("Armory", 1, _rt:GetOrigin(), 40) == 0) then
+                if #GetEntitiesForTeamWithinRange("Armory", 1, _rt:GetOrigin(), 40) == 0
+                    and #GetEntitiesForTeamWithinRange("Player", 1, _rt:GetOrigin(), 30) == 0
+                then
                     for _, dropName in ipairs({"AmmoPack", "MedPack", "CatPack"}) do
                         if (#GetEntitiesForTeamWithinRange(dropName, 2, _rt:GetOrigin(), 4) > 1) then
                             hasRtDropAlready = true
