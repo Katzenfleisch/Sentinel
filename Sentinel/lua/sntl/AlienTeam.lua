@@ -252,12 +252,13 @@ local old_AlienTeam_SpawnInitialStructures = AlienTeam.SpawnInitialStructures
 function AlienTeam:SpawnInitialStructures(techPoint)
     local numHydras = 3
     local numWebs = 20
+    local babblerEggs = 5
     local kNumEggGroup = 4
     local kNumEggPerGroup = 6
     local _, eggs = SpawnRandomEggs(kNumEggGroup, kNumEggPerGroup, techPoint:GetOrigin())
     GetGameInfoEntity():SetNumMaxEggs(kNumEggGroup * kNumEggPerGroup)
 
-    for i = 1, numHydras + numWebs do
+    for i = 1, numHydras + numWebs + babblerEggs do
         local randEgg = eggs[math.random(1, #eggs)]
 
         for j = 1, 10 do
@@ -279,12 +280,19 @@ function AlienTeam:SpawnInitialStructures(techPoint)
                             angles:BuildFromCoords(coords)
                             h:SetAngles(angles)
                         end
-                    else
+                    elseif i <= numHydras + numWebs then
                         if coords.origin:GetDistanceTo(hydraOrig) < kMaxWebLength then
                             h = CreateEntity(Web.kMapName, coords.origin, kAlienTeamType)
                             if h then
                                 h:SetEndPoint(hydraOrig)
                             end
+                        end
+                    else
+                        h = CreateEntity(BabblerEgg.kMapName, coords.origin, kAlienTeamType)
+                        if h then
+                            local angles = Angles()
+                            angles:BuildFromCoords(coords)
+                            h:SetAngles(angles)
                         end
                     end
 
