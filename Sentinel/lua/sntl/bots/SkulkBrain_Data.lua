@@ -1120,11 +1120,7 @@ kSkulkBrainActions =
                          -- skulk:Kill()
 
                      elseif st == kState.attack then
-                         if dist > 3 then
-                             AIA_Alien_engage(bot, brain, move, target)
-                         else
-                             PerformAttackEntity( skulk:GetEyePos(), target, bot, brain, move )
-                         end
+                         PerformAttackEntity( skulk:GetEyePos(), target, bot, brain, move )
                          if not target or not target:GetIsAlive() then
                              SetState(bot, kState.sneak)
                          end
