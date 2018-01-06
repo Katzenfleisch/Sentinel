@@ -158,6 +158,11 @@ function GUIRespawnLeft:Update(deltaTime)
 
     end
 
+    -- Hack/Fix to ensure we have at least 1 pad displayed until we got no respawn
+    if respawnLeft > 0 then
+        self.pads[1]:SetColor( kPadActiveColor )
+    end
+
     if GetGameInfoEntity():GetGameStarted() then
         self:SetIsVisible(true)
     else
