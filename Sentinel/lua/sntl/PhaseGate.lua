@@ -21,6 +21,10 @@ function PhaseGate:GetConnectionEndPoint()
     return self:GetConnectionStartPoint()
 end
 
+function PhaseGate:GetCanTakeDamageOverride()
+    return false
+end
+
 if Server then
 
     local old_PhaseGate_GetIsPowered = PhaseGate.GetIsPowered or PowerConsumerMixin.GetIsPowered
