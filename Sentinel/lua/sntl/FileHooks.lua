@@ -39,6 +39,8 @@ ModLoader_SetupFileHook("lua/NS2Utility.lua", "post")
 ModLoader_SetupFileHook("lua/Egg.lua", "post")
 ModLoader_SetupFileHook("lua/Player.lua", "post")
 
+ModLoader_SetupFileHook("lua/Weapons/Marine/Claw.lua", "post")
+
 ModLoader_SetupFileHook("lua/bots/PlayerBot.lua", "post")
 ModLoader_SetupFileHook("lua/bots/TeamBrain.lua", "post")
 ModLoader_SetupFileHook("lua/bots/BotMotion.lua", "replace")
