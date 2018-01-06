@@ -23,6 +23,8 @@ ModLoader_SetupFileHook("lua/PlayingTeam.lua", "post")
 
 ModLoader_SetupFileHook("lua/Exo.lua", "post")
 ModLoader_SetupFileHook("lua/Marine_Server.lua", "post")
+
+ModLoader_SetupFileHook("lua/Armory.lua", "post")
 ModLoader_SetupFileHook("lua/PhaseGate.lua", "post")
 ModLoader_SetupFileHook("lua/PrototypeLab.lua", "post")
 ModLoader_SetupFileHook("lua/InfantryPortal.lua", "post")
