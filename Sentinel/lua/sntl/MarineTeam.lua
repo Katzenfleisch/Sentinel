@@ -193,7 +193,7 @@ function MarineTeam:randomBonusDrop()
     if SNTL_LimitCallFrequency(MarineTeam.randomBonusDrop, 5) then return end
 
     local nb_drop = #GetEntities("AmmoPack")-- + #GetEntities("MedPack") + #GetEntities("CatPack")
-    if (nb_drop < 10) then
+    if (nb_drop < 13) then
         local ent = nil
         local rt = nil
 
