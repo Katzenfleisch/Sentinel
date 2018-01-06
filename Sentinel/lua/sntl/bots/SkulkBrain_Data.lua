@@ -65,19 +65,16 @@ local function GetRetreatDist(skulk)
     return skulk.kRetreatDist
 end
 
-
-local function SlerpValueWithEggCount(from, to)
-
+function SlerpValueWithEggCount(from, to)
     local sign = 1
     local f = from < to and from or to
     local t = from < to and to or from
     local eggFraction = 1 - (GetGameInfoEntity():GetNumEggs() / GetGameInfoEntity():GetNumMaxEggs())
 
-    if(from - to < 0) then
+    if(from - to > 0) then
         sign = -1
     end
-
-    return (from + (t - f) * eggFraction) * sign
+    return from + ((t - f) * eggFraction * sign)
 end
 
 local function HasSneakWaitAbility(skulk)
