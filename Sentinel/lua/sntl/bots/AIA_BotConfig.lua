@@ -35,11 +35,11 @@ kAIA_ability_retreat = 0.45
 -- Control how long an alien is moving forward after trying to bite, and before turning toward the target again
 -- Delay in second. (the greater the easier to dodge). This can be seen as reaction time in combat.
 kAIA_attack_inertia_min = kAIA_nerfing and 0.10 or 0
-kAIA_attack_inertia_max = kAIA_nerfing and 0.45 or 0
+kAIA_attack_inertia_max = kAIA_nerfing and 0.50 or 0
 
 -- Deviation of the bite from the marine (the greater, the more often an attack will miss)
 kAIA_attack_acc_min_deviation = kAIA_nerfing and 0.25 or 0
-kAIA_attack_acc_max_deviation = kAIA_nerfing and 0.95 or 0
+kAIA_attack_acc_max_deviation = kAIA_nerfing and 0.98 or 0
 
 -- Skulk
 kAIA_wall_jump = true
