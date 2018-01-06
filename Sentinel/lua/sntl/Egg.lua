@@ -183,6 +183,10 @@ if Server then
 
     end
 
+    function Egg:GetDestroyOnKill()
+        return false
+    end
+
     -- NOTE: Eggs entities are destroyed here yet, otherwise infestation would immediately vanish.
     -- InfestationMixin handles allowing the entity to be destroyed, which is then handled in
     -- Cyst:OnUpdate().
