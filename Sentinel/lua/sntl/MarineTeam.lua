@@ -57,6 +57,11 @@ function MarineTeam:SpawnInitialStructures(techPoint)
         if armslab then armslab:SetConstructionComplete() ; SetRandomAngle(armslab) end
     end
 
+    for i = 1, 2 do
+        local MAC_origin = SNTL_SpreadedPlacementFromOrigin(GetExtents(kTechId.MAC), origin, 1, 2, 5)
+        local MAC = MAC_origin and CreateEntity(MAC.kMapName, MAC_origin[1], kMarineTeamType)
+    end
+
     local armory_origin = SNTL_SpreadedPlacementFromOrigin(GetExtents(kTechId.Armory), origin, 1, 2, 5)
     local armory = armory_origin and CreateEntity(Armory.kMapName, armory_origin[1], kMarineTeamType)
     if armory then armory:SetConstructionComplete() ; SetRandomAngle(armory) end
