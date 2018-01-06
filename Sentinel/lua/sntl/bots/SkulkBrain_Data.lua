@@ -65,18 +65,35 @@ local function GetRetreatDist(skulk)
     return skulk.kRetreatDist
 end
 
+
+local function SlerpValueWithEggCount(from, to)
+
+    local sign = 1
+    local f = from < to and from or to
+    local t = from < to and to or from
+    local eggFraction = 1 - (GetGameInfoEntity():GetNumEggs() / GetGameInfoEntity():GetNumMaxEggs())
+
+    if(from - to < 0) then
+        sign = -1
+    end
+
+    return (from + (t - f) * eggFraction) * sign
+end
+
 local function HasSneakWaitAbility(skulk)
-    -- kAIA_ability_sneak_wait = 0.70
+    local sneak_wait_percent = SlerpValueWithEggCount(kAIA_ability_sneak_wait, kAIA_ability_sneak_wait_endgame)
+
     if not skulk.kSneakWaitSkulk then
-        skulk.kSneakWaitSkulk = (math.random() <= kAIA_ability_sneak_wait)
+        skulk.kSneakWaitSkulk = (math.random() <= sneak_wait_percent)
     end
     return skulk.kSneakWaitSkulk
 end
 
 local function HasRetreatAbility(skulk)
-    -- kAIA_ability_retreat = 0.70
+    local retreat_percent = SlerpValueWithEggCount(kAIA_ability_retreat, kAIA_ability_retreat_endgame)
+
     if not skulk.kRetreatSkulk then
-        skulk.kRetreatSkulk = (math.random() <= kAIA_ability_retreat)
+        skulk.kRetreatSkulk = (math.random() <= retreat_percent)
     end
     return skulk.kRetreatSkulk
 end
