@@ -29,9 +29,9 @@ kAIA_jump_in_combat = 0.08
 
 kAIA_fully_unerf_at = 6
 
-kAIA_ability_retreat = 0.85
+kAIA_ability_retreat = 0.90
 kAIA_ability_retreat_endgame = 0.30
-kAIA_ability_sneak_wait = 0.80
+kAIA_ability_sneak_wait = 0.85
 kAIA_ability_sneak_wait_endgame = 0.50
 
 -- Control how long an alien is moving forward after trying to bite, and before turning toward the target again
