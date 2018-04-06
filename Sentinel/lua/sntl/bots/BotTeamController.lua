@@ -27,7 +27,7 @@ function BotTeamController:UpdateBots()
             self:RemoveBot(kTeam2Index)
         end
     elseif team2Count < maxTeamBots and humanCount > 0 then
-        self:AddBot(kTeam2Index)
+        self:AddBots(kTeam2Index, 1)
     end
 
 end
